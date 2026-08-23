@@ -1,4 +1,6 @@
-const KEY = "ctd_worker_hajeri_v5";
+const KEY = "ctd_worker_hajeri_v4";
+
+const OLD_KEY = "ctd_worker_hajeri_v3";
 
 const defaultData = {
   workers: [
@@ -30,9 +32,9 @@ const editWorkerId = document.getElementById("editWorkerId");
 dateInput.value = todayISO();
 
 
-// ===============================
+// =====================================================
 // LOAD DATA
-// ===============================
+// =====================================================
 
 function loadData() {
 
@@ -62,20 +64,48 @@ function loadData() {
           w.phone = "";
         }
 
-        if (w.rate === undefined) {
-          w.rate = 0;
-        }
-
       });
 
       return parsed;
     }
 
+
+    // OLD VERSION मधून फक्त Worker Names घ्या
+    // जुना चुकीचा attendance data घेऊ नका
+
+    const oldSaved = localStorage.getItem(OLD_KEY);
+
+    if (oldSaved) {
+
+      const oldData = JSON.parse(oldSaved);
+
+      if (
+        oldData &&
+        Array.isArray(oldData.workers)
+      ) {
+
+        return {
+          workers: oldData.workers.map(w => ({
+            id: w.id || crypto.randomUUID(),
+            name: w.name || "",
+            rate: Number(w.rate || 0),
+            otRate: Number(w.otRate || 0),
+            phone: w.phone || ""
+          })),
+
+          attendance: {}
+        };
+
+      }
+
+    }
+
+
     return defaultData;
 
-  } catch (e) {
+  }
 
-    console.log(e);
+  catch (e) {
 
     return defaultData;
 
@@ -84,9 +114,9 @@ function loadData() {
 }
 
 
-// ===============================
-// SAVE DATA
-// ===============================
+// =====================================================
+// SAVE
+// =====================================================
 
 function saveData() {
 
@@ -98,9 +128,9 @@ function saveData() {
 }
 
 
-// ===============================
-// TODAY
-// ===============================
+// =====================================================
+// DATE
+// =====================================================
 
 function todayISO() {
 
@@ -116,10 +146,6 @@ function todayISO() {
 }
 
 
-// ===============================
-// SELECTED DATE
-// ===============================
-
 function selectedDate() {
 
   return dateInput.value || todayISO();
@@ -127,15 +153,32 @@ function selectedDate() {
 }
 
 
-// ===============================
+// =====================================================
+// CHECK IF ATTENDANCE IS SUBMITTED
+// =====================================================
+
+function isSubmitted(workerId, date) {
+
+  return !!(
+    data.attendance &&
+    data.attendance[date] &&
+    data.attendance[date][workerId] &&
+    data.attendance[date][workerId].submitted === true
+  );
+
+}
+
+
+// =====================================================
 // GET SAVED ATTENDANCE
 // IMPORTANT:
-// DO NOT CREATE RECORD HERE
-// ===============================
+// येथे default Present SAVE होत नाही
+// =====================================================
 
 function getSavedAttendance(workerId, date) {
 
   if (
+    data.attendance &&
     data.attendance[date] &&
     data.attendance[date][workerId]
   ) {
@@ -149,36 +192,11 @@ function getSavedAttendance(workerId, date) {
 }
 
 
-// ===============================
-// DISPLAY ATTENDANCE
-// If not saved -> Present visually
-// But NOT saved automatically
-// ===============================
-
-function getDisplayAttendance(workerId, date) {
-
-  const saved =
-    getSavedAttendance(workerId, date);
-
-  if (saved) {
-    return saved;
-  }
-
-  return {
-    status: "Present",
-    otHours: 0,
-    advance: 0,
-    payment: "Pending"
-  };
-
-}
-
-
-// ===============================
+// =====================================================
 // SAVE ATTENDANCE
-// ===============================
+// =====================================================
 
-function setAttendance(
+function saveAttendance(
   workerId,
   values,
   date = selectedDate()
@@ -190,20 +208,33 @@ function setAttendance(
 
   }
 
+
   const old =
     data.attendance[date][workerId] || {
+
       status: "Present",
+
       otHours: 0,
+
       advance: 0,
-      payment: "Pending"
+
+      payment: "Pending",
+
+      submitted: false
+
     };
+
 
   data.attendance[date][workerId] = {
 
     ...old,
-    ...values
+
+    ...values,
+
+    submitted: true
 
   };
+
 
   saveData();
 
@@ -212,9 +243,9 @@ function setAttendance(
 }
 
 
-// ===============================
-// FILTER WORKERS
-// ===============================
+// =====================================================
+// SEARCH WORKERS
+// =====================================================
 
 function filteredWorkers() {
 
@@ -223,18 +254,21 @@ function filteredWorkers() {
       .trim()
       .toLowerCase();
 
+
   return data.workers.filter(w =>
+
     w.name
       .toLowerCase()
       .includes(q)
+
   );
 
 }
 
 
-// ===============================
+// =====================================================
 // RENDER
-// ===============================
+// =====================================================
 
 function render() {
 
@@ -244,38 +278,46 @@ function render() {
   const date =
     selectedDate();
 
+
   document.getElementById(
     "selectedDateLabel"
   ).textContent =
     formatDate(date);
 
 
-  // -------------------------------
-  // DAILY COUNTS
-  // -------------------------------
-
   let present = 0;
   let absent = 0;
   let half = 0;
 
 
+  // -----------------------------------------------
+  // TODAY / SELECTED DATE COUNTER
+  // ONLY SUBMITTED ATTENDANCE COUNT
+  // -----------------------------------------------
+
   data.workers.forEach(w => {
 
     const a =
-      getDisplayAttendance(
+      getSavedAttendance(
         w.id,
         date
       );
+
+
+    if (!a || a.submitted !== true) {
+      return;
+    }
+
 
     if (a.status === "Present") {
       present++;
     }
 
-    if (a.status === "Absent") {
+    else if (a.status === "Absent") {
       absent++;
     }
 
-    if (a.status === "Half Day") {
+    else if (a.status === "Half Day") {
       half++;
     }
 
@@ -287,15 +329,18 @@ function render() {
   ).textContent =
     data.workers.length;
 
+
   document.getElementById(
     "presentCount"
   ).textContent =
     present;
 
+
   document.getElementById(
     "absentCount"
   ).textContent =
     absent;
+
 
   document.getElementById(
     "halfCount"
@@ -303,24 +348,42 @@ function render() {
     half;
 
 
-  // -------------------------------
+  // =================================================
   // DAILY TABLE
-  // -------------------------------
+  // =================================================
 
   workerTable.innerHTML =
     workers.map((w, i) => {
 
       const a =
-        getDisplayAttendance(
-          w.id,
-          date
-        );
-
-      const saved =
         getSavedAttendance(
           w.id,
           date
         );
+
+
+      const submitted =
+        a &&
+        a.submitted === true;
+
+
+      const status =
+        submitted
+          ? a.status
+          : "Present";
+
+
+      const otHours =
+        submitted
+          ? Number(a.otHours || 0)
+          : 0;
+
+
+      const advance =
+        submitted
+          ? Number(a.advance || 0)
+          : 0;
+
 
       return `
 
@@ -349,35 +412,22 @@ function render() {
 
             <select
               class="status-select"
-              onchange="
-                changeStatus(
-                  '${w.id}',
-                  this.value
-                )
-              "
+              id="status-${w.id}"
+              ${submitted ? "" : "disabled"}
             >
 
               <option value="Present"
-                ${a.status === "Present"
-                  ? "selected"
-                  : ""}
-              >
+                ${status === "Present" ? "selected" : ""}>
                 Present
               </option>
 
               <option value="Absent"
-                ${a.status === "Absent"
-                  ? "selected"
-                  : ""}
-              >
+                ${status === "Absent" ? "selected" : ""}>
                 Absent
               </option>
 
               <option value="Half Day"
-                ${a.status === "Half Day"
-                  ? "selected"
-                  : ""}
-              >
+                ${status === "Half Day" ? "selected" : ""}>
                 Half Day
               </option>
 
@@ -393,13 +443,9 @@ function render() {
               type="number"
               min="0"
               step="0.5"
-              value="${a.otHours || 0}"
-              onchange="
-                changeOT(
-                  '${w.id}',
-                  this.value
-                )
-              "
+              id="ot-${w.id}"
+              value="${otHours}"
+              ${submitted ? "" : "disabled"}
             >
 
           </td>
@@ -412,56 +458,50 @@ function render() {
               type="number"
               min="0"
               step="1"
-              value="${a.advance || 0}"
-              onchange="
-                changeAdvance(
-                  '${w.id}',
-                  this.value
-                )
-              "
+              id="advance-${w.id}"
+              value="${advance}"
+              ${submitted ? "" : "disabled"}
             >
+
+          </td>
+
+
+          <td>
+
+            ${
+              submitted
+
+              ?
+
+              `
+                <button
+                  class="edit"
+                  onclick="editAttendance('${w.id}')"
+                >
+                  Edit
+                </button>
+              `
+
+              :
+
+              `
+                <button
+                  class="primary attendance-submit"
+                  onclick="submitAttendance('${w.id}')"
+                >
+                  Submit
+                </button>
+              `
+            }
 
           </td>
 
 
           <td class="actions">
 
-            ${
-              saved
-                ? `
-                  <button
-                    class="edit"
-                    onclick="
-                      editAttendance(
-                        '${w.id}'
-                      )
-                    "
-                  >
-                    Edit
-                  </button>
-                `
-                : `
-                  <button
-                    class="edit"
-                    onclick="
-                      submitAttendance(
-                        '${w.id}'
-                      )
-                    "
-                  >
-                    Submit
-                  </button>
-                `
-            }
-
-
             <button
               class="edit"
-              onclick="
-                openEdit(
-                  '${w.id}'
-                )
-              "
+              onclick="openEdit('${w.id}')"
             >
               Edit
             </button>
@@ -469,11 +509,7 @@ function render() {
 
             <button
               class="danger"
-              onclick="
-                deleteWorker(
-                  '${w.id}'
-                )
-              "
+              onclick="deleteWorker('${w.id}')"
             >
               Delete
             </button>
@@ -500,155 +536,111 @@ function render() {
 }
 
 
-// ===============================
-// SUBMIT DAILY ATTENDANCE
-// ===============================
+// =====================================================
+// SUBMIT ATTENDANCE
+// =====================================================
 
 window.submitAttendance =
-function(workerId) {
-
-  const date =
-    selectedDate();
-
-  const existing =
-    getSavedAttendance(
-      workerId,
-      date
-    );
-
-  if (existing) {
-    return;
-  }
-
-
-  if (!data.attendance[date]) {
-
-    data.attendance[date] = {};
-
-  }
-
-
-  data.attendance[date][workerId] = {
-
-    status: "Present",
-    otHours: 0,
-    advance: 0,
-    payment: "Pending"
-
-  };
-
-
-  saveData();
-
-  render();
-
-};
-
-
-// ===============================
-// EDIT DAILY ATTENDANCE
-// ===============================
-
-window.editAttendance =
-function(workerId) {
-
-  const date =
-    selectedDate();
-
-  if (
-    !data.attendance[date] ||
-    !data.attendance[date][workerId]
-  ) {
-    return;
-  }
-
-  const a =
-    data.attendance[date][workerId];
+function(id) {
 
   const status =
-    prompt(
-      "Enter Status: Present / Absent / Half Day",
-      a.status
+    document.getElementById(
+      `status-${id}`
+    ).value;
+
+
+  const otHours =
+    Number(
+      document.getElementById(
+        `ot-${id}`
+      ).value || 0
     );
 
-  if (
-    status !== "Present" &&
-    status !== "Absent" &&
-    status !== "Half Day"
-  ) {
 
-    return;
-
-  }
+  const advance =
+    Number(
+      document.getElementById(
+        `advance-${id}`
+      ).value || 0
+    );
 
 
-  a.status = status;
+  saveAttendance(id, {
 
-  saveData();
+    status: status,
 
-  render();
+    otHours: otHours,
 
-};
+    advance: advance,
 
+    payment: "Pending"
 
-// ===============================
-// STATUS
-// ===============================
-
-window.changeStatus =
-function(id, status) {
-
-  setAttendance(
-    id,
-    {
-      status: status
-    }
-  );
+  });
 
 };
 
 
-// ===============================
-// OT
-// ===============================
+// =====================================================
+// EDIT ATTENDANCE
+// =====================================================
 
-window.changeOT =
-function(id, value) {
+window.editAttendance =
+function(id) {
 
-  setAttendance(
-    id,
-    {
-      otHours:
-        Number(value || 0)
-    }
-  );
+  const status =
+    document.getElementById(
+      `status-${id}`
+    );
+
+  const ot =
+    document.getElementById(
+      `ot-${id}`
+    );
+
+  const advance =
+    document.getElementById(
+      `advance-${id}`
+    );
+
+
+  status.disabled = false;
+
+  ot.disabled = false;
+
+  advance.disabled = false;
+
+
+  const button =
+    event.target;
+
+
+  button.textContent =
+    "Save";
+
+
+  button.onclick =
+    function() {
+
+      saveAttendance(id, {
+
+        status: status.value,
+
+        otHours:
+          Number(ot.value || 0),
+
+        advance:
+          Number(advance.value || 0)
+
+      });
+
+    };
 
 };
 
 
-// ===============================
-// ADVANCE
-// ===============================
-
-window.changeAdvance =
-function(id, value) {
-
-  setAttendance(
-    id,
-    {
-      advance:
-        Number(value || 0)
-    }
-  );
-
-};
-
-
-// ===============================
-// MONTHLY SUMMARY
-// IMPORTANT FIX
-// ONLY SAVED DAYS COUNT
-// ===============================
+// =====================================================
+// MONTHLY REPORT
+// =====================================================
 
 function renderMonthly() {
 
@@ -673,12 +665,22 @@ function renderMonthly() {
     data.workers.map(w => {
 
       let present = 0;
+
       let half = 0;
+
       let absent = 0;
+
       let otHours = 0;
+
       let advance = 0;
+
       let payment = "Pending";
 
+
+      // -----------------------------------------------
+      // IMPORTANT:
+      // Only submitted attendance is counted
+      // -----------------------------------------------
 
       for (
         let d = 1;
@@ -687,13 +689,9 @@ function renderMonthly() {
       ) {
 
         const iso =
-          `${year}-${String(month)
-            .padStart(2, "0")}-${String(d)
-            .padStart(2, "0")}`;
+          `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 
-        // IMPORTANT:
-        // Get ONLY SAVED attendance
         const a =
           getSavedAttendance(
             w.id,
@@ -701,16 +699,19 @@ function renderMonthly() {
           );
 
 
-        // If no attendance saved
-        // DO NOT COUNT THIS DAY
-        if (!a) {
+        // Submit केलेले नसेल तर skip
+
+        if (
+          !a ||
+          a.submitted !== true
+        ) {
+
           continue;
+
         }
 
 
-        if (
-          a.status === "Present"
-        ) {
+        if (a.status === "Present") {
 
           present++;
 
@@ -757,21 +758,17 @@ function renderMonthly() {
 
       const payableDays =
         present +
-        (half * 0.5);
+        half * 0.5;
 
 
       const grossSalary =
         payableDays *
-        Number(
-          w.rate || 0
-        );
+        Number(w.rate || 0);
 
 
       const overtimeAmount =
         otHours *
-        Number(
-          w.otRate || 0
-        );
+        Number(w.otRate || 0);
 
 
       const totalSalary =
@@ -782,8 +779,7 @@ function renderMonthly() {
       const netSalary =
         Math.max(
           0,
-          totalSalary -
-          advance
+          totalSalary - advance
         );
 
 
@@ -834,30 +830,21 @@ function renderMonthly() {
 
 
           <td>
-
             <strong>
               ₹${netSalary.toLocaleString("en-IN")}
             </strong>
-
           </td>
 
 
           <td>
 
             <select
-              onchange="
-                changeMonthlyPayment(
-                  '${w.id}',
-                  this.value
-                )
-              "
+              onchange="changeMonthlyPayment('${w.id}', this.value)"
             >
 
               <option
                 value="Pending"
-                ${payment === "Pending"
-                  ? "selected"
-                  : ""}
+                ${payment === "Pending" ? "selected" : ""}
               >
                 Pending
               </option>
@@ -865,9 +852,7 @@ function renderMonthly() {
 
               <option
                 value="Paid"
-                ${payment === "Paid"
-                  ? "selected"
-                  : ""}
+                ${payment === "Paid" ? "selected" : ""}
               >
                 Paid
               </option>
@@ -885,9 +870,9 @@ function renderMonthly() {
 }
 
 
-// ===============================
+// =====================================================
 // MONTHLY PAYMENT
-// ===============================
+// =====================================================
 
 window.changeMonthlyPayment =
 function(id, value) {
@@ -916,17 +901,13 @@ function(id, value) {
   ) {
 
     const iso =
-      `${year}-${String(month)
-        .padStart(2, "0")}-${String(d)
-        .padStart(2, "0")}`;
+      `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 
-    // IMPORTANT:
-    // Do NOT create attendance
-    // for every day.
     if (
       data.attendance[iso] &&
-      data.attendance[iso][id]
+      data.attendance[iso][id] &&
+      data.attendance[iso][id].submitted === true
     ) {
 
       data.attendance[iso][id].payment =
@@ -944,9 +925,9 @@ function(id, value) {
 };
 
 
-// ===============================
+// =====================================================
 // FORMAT DATE
-// ===============================
+// =====================================================
 
 function formatDate(iso) {
 
@@ -957,34 +938,36 @@ function formatDate(iso) {
   ] =
     iso.split("-");
 
+
   return `${d}-${m}-${y}`;
 
 }
 
 
-// ===============================
+// =====================================================
 // ESCAPE HTML
-// ===============================
+// =====================================================
 
 function esc(s) {
 
   return String(s).replace(
     /[&<>"']/g,
-    c => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[c])
+    c =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[c])
   );
 
 }
 
 
-// ===============================
-// EDIT WORKER
-// ===============================
+// =====================================================
+// WORKER EDIT
+// =====================================================
 
 window.openEdit =
 function(id) {
@@ -993,6 +976,7 @@ function(id) {
     data.workers.find(
       x => x.id === id
     );
+
 
   if (!w) return;
 
@@ -1033,9 +1017,9 @@ function(id) {
 };
 
 
-// ===============================
+// =====================================================
 // DELETE WORKER
-// ===============================
+// =====================================================
 
 window.deleteWorker =
 function(id) {
@@ -1045,6 +1029,7 @@ function(id) {
       x => x.id === id
     );
 
+
   if (!w) return;
 
 
@@ -1053,7 +1038,9 @@ function(id) {
       `Delete worker "${w.name}"?`
     )
   ) {
+
     return;
+
   }
 
 
@@ -1067,13 +1054,9 @@ function(id) {
     data.attendance
   ).forEach(date => {
 
-    if (
-      data.attendance[date]
-    ) {
-
-      delete data.attendance[date][id];
-
-    }
+    delete data.attendance[
+      date
+    ][id];
 
   });
 
@@ -1085,9 +1068,9 @@ function(id) {
 };
 
 
-// ===============================
+// =====================================================
 // ADD WORKER
-// ===============================
+// =====================================================
 
 document.getElementById(
   "addWorkerBtn"
@@ -1121,9 +1104,9 @@ function() {
 };
 
 
-// ===============================
+// =====================================================
 // CLOSE MODAL
-// ===============================
+// =====================================================
 
 function closeModal() {
 
@@ -1162,9 +1145,9 @@ modal.addEventListener(
 );
 
 
-// ===============================
+// =====================================================
 // SAVE WORKER
-// ===============================
+// =====================================================
 
 document.getElementById(
   "saveWorkerBtn"
@@ -1202,21 +1185,17 @@ function() {
 
     if (w) {
 
-      w.name =
-        name;
-
+      w.name = name;
 
       w.rate =
         Number(
           workerRate.value || 0
         );
 
-
       w.otRate =
         Number(
           workerOTRate.value || 0
         );
-
 
       w.phone =
         workerPhone.value.trim();
@@ -1262,9 +1241,9 @@ function() {
 };
 
 
-// ===============================
+// =====================================================
 // MARK ALL PRESENT
-// ===============================
+// =====================================================
 
 document.getElementById(
   "allPresentBtn"
@@ -1273,9 +1252,7 @@ function() {
 
   if (
     !data.workers.length
-  ) {
-    return;
-  }
+  ) return;
 
 
   const date =
@@ -1293,21 +1270,22 @@ function() {
 
   data.workers.forEach(w => {
 
-    const old =
-      data.attendance[date][w.id] ||
-      {
-        status: "Present",
-        otHours: 0,
-        advance: 0,
-        payment: "Pending"
-      };
-
-
     data.attendance[date][w.id] = {
 
-      ...old,
+      status:
+        "Present",
 
-      status: "Present"
+      otHours:
+        0,
+
+      advance:
+        0,
+
+      payment:
+        "Pending",
+
+      submitted:
+        true
 
     };
 
@@ -1321,25 +1299,21 @@ function() {
 };
 
 
-// ===============================
-// DATE CHANGE
-// ===============================
+// =====================================================
+// SEARCH / DATE
+// =====================================================
 
 dateInput.onchange =
 render;
 
 
-// ===============================
-// SEARCH
-// ===============================
-
 searchInput.oninput =
 render;
 
 
-// ===============================
+// =====================================================
 // PRINT
-// ===============================
+// =====================================================
 
 document.getElementById(
   "printBtn"
@@ -1351,9 +1325,9 @@ function() {
 };
 
 
-// ===============================
+// =====================================================
 // EXPORT CSV
-// ===============================
+// =====================================================
 
 document.getElementById(
   "exportBtn"
@@ -1363,12 +1337,19 @@ function() {
   const rows = [[
 
     "Date",
+
     "Worker Name",
+
     "Daily Rate",
+
     "Status",
+
     "OT Hours",
+
     "Advance",
+
     "OT Rate",
+
     "OT Amount"
 
   ]];
@@ -1391,9 +1372,13 @@ function() {
         );
 
 
-      // Only export saved attendance
-      if (!a) {
+      if (
+        !a ||
+        a.submitted !== true
+      ) {
+
         return;
+
       }
 
 
@@ -1407,11 +1392,11 @@ function() {
 
         a.status,
 
-        a.otHours || 0,
+        a.otHours,
 
-        a.advance || 0,
+        a.advance,
 
-        w.otRate || 0,
+        w.otRate,
 
         Number(
           a.otHours || 0
@@ -1427,43 +1412,36 @@ function() {
   });
 
 
-  if (
-    rows.length === 1
-  ) {
+  if (rows.length === 1) {
 
     rows.push([
-
       selectedDate(),
-
-      "No attendance saved",
-
+      "No attendance submitted",
       "",
-
       "",
       "",
       "",
       "",
       ""
-
     ]);
 
   }
 
 
   const csv =
-    rows
-      .map(row =>
-        row
-          .map(value =>
-            `"${String(value)
-              .replaceAll(
-                '"',
-                '""'
-              )}"`
-          )
-          .join(",")
-      )
-      .join("\n");
+    rows.map(row =>
+
+      row.map(value =>
+
+        `"${String(value)
+          .replaceAll(
+            '"',
+            '""'
+          )}"`
+
+      ).join(",")
+
+    ).join("\n");
 
 
   const blob =
@@ -1497,8 +1475,8 @@ function() {
 };
 
 
-// ===============================
+// =====================================================
 // START
-// ===============================
+// =====================================================
 
 render();
