@@ -19,7 +19,6 @@
   </div>
 
   <div class="top-actions">
-
     <button id="printBtn" class="secondary">
       Print Report
     </button>
@@ -27,7 +26,6 @@
     <button id="exportBtn" class="secondary">
       Export CSV
     </button>
-
   </div>
 
 </header>
@@ -35,20 +33,17 @@
 
 <main class="container">
 
-
-  <!-- DATE + WORKER SELECT -->
+  <!-- TOOLBAR -->
 
   <section class="card toolbar">
 
     <div>
-
       <label>Date</label>
 
       <input
         type="date"
         id="dateInput"
       >
-
     </div>
 
 
@@ -56,15 +51,31 @@
 
       <label>Search / Select Worker</label>
 
-      <select id="workerSelect">
+      <div class="worker-picker">
 
-        <option value="">
-          All Workers
-        </option>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Select or search worker name"
+          autocomplete="off"
+        >
 
-      </select>
+        <div
+          id="workerDropdown"
+          class="worker-dropdown hidden"
+        ></div>
+
+      </div>
 
     </div>
+
+
+    <button
+      id="clearWorkerBtn"
+      class="secondary"
+    >
+      Show All
+    </button>
 
 
     <button
@@ -77,56 +88,31 @@
   </section>
 
 
-
   <!-- STATS -->
 
   <section class="stats">
 
     <div class="stat">
-
-      <strong id="totalCount">
-        0
-      </strong>
-
-      <span>Total Workers</span>
-
+      <strong id="totalCount">0</strong>
+      <span>Total</span>
     </div>
 
-
     <div class="stat">
-
-      <strong id="presentCount">
-        0
-      </strong>
-
+      <strong id="presentCount">0</strong>
       <span>Present</span>
-
     </div>
 
-
     <div class="stat">
-
-      <strong id="absentCount">
-        0
-      </strong>
-
+      <strong id="absentCount">0</strong>
       <span>Absent</span>
-
     </div>
 
-
     <div class="stat">
-
-      <strong id="halfCount">
-        0
-      </strong>
-
+      <strong id="halfCount">0</strong>
       <span>Half Day</span>
-
     </div>
 
   </section>
-
 
 
   <!-- DAILY HAJERI -->
@@ -136,15 +122,10 @@
     <div class="section-title">
 
       <div>
-
-        <h2>
-          Daily Hajeri
-        </h2>
+        <h2>Daily Hajeri</h2>
 
         <p id="selectedDateLabel"></p>
-
       </div>
-
 
       <button
         id="allPresentBtn"
@@ -163,27 +144,17 @@
         <thead>
 
           <tr>
-
             <th>#</th>
-
             <th>Worker Name</th>
-
             <th>Daily Rate</th>
-
             <th>Status</th>
-
             <th>OT Hours</th>
-
             <th>Advance ₹</th>
-
             <th>Attendance</th>
-
             <th>Actions</th>
-
           </tr>
 
         </thead>
-
 
         <tbody id="workerTable"></tbody>
 
@@ -202,7 +173,6 @@
   </section>
 
 
-
   <!-- MONTHLY REPORT -->
 
   <section class="card">
@@ -211,12 +181,10 @@
 
       <div>
 
-        <h2>
-          Monthly Salary Summary
-        </h2>
+        <h2>Monthly Salary Summary</h2>
 
         <p>
-          Only submitted attendance will be counted.
+          Only submitted attendance is counted.
         </p>
 
       </div>
@@ -233,29 +201,19 @@
           <tr>
 
             <th>Worker</th>
-
             <th>Present</th>
-
             <th>Half Day</th>
-
             <th>Absent</th>
-
             <th>OT Hours</th>
-
             <th>Payable Days</th>
-
             <th>Gross Salary</th>
-
             <th>Advance</th>
-
             <th>Net Salary</th>
-
             <th>Payment</th>
 
           </tr>
 
         </thead>
-
 
         <tbody id="monthlyTable"></tbody>
 
@@ -268,7 +226,6 @@
 </main>
 
 
-
 <!-- ADD / EDIT WORKER MODAL -->
 
 <div
@@ -277,7 +234,6 @@
 >
 
   <div class="modal-box">
-
 
     <div class="modal-head">
 
@@ -295,9 +251,7 @@
     </div>
 
 
-    <label>
-      Worker Name *
-    </label>
+    <label>Worker Name *</label>
 
     <input
       id="workerName"
@@ -306,22 +260,18 @@
     >
 
 
-    <label>
-      Daily Rate ₹
-    </label>
+    <label>Daily Rate ₹</label>
 
     <input
       id="workerRate"
       type="number"
       min="0"
       step="1"
-      placeholder="500"
+      placeholder="0"
     >
 
 
-    <label>
-      OT Rate ₹ / Hour
-    </label>
+    <label>OT Rate ₹ / Hour</label>
 
     <input
       id="workerOTRate"
@@ -332,9 +282,7 @@
     >
 
 
-    <label>
-      Mobile Number
-    </label>
+    <label>Mobile Number</label>
 
     <input
       id="workerPhone"
