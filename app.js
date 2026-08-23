@@ -1,16 +1,13 @@
-const KEY = "ctd_worker_hajeri_final_v1";
+const KEY = "ctd_worker_hajeri_v4";
+const OLD_KEY = "ctd_worker_hajeri_v3";
 
-
-// ======================================================
-// DEFAULT DATA
-// ======================================================
 
 const defaultData = {
   workers: [
     {
       id: crypto.randomUUID(),
       name: "ARMAN",
-      rate: 500,
+      rate: 0,
       otRate: 0,
       phone: ""
     }
@@ -20,159 +17,14 @@ const defaultData = {
 };
 
 
-// ======================================================
-// LOAD DATA
-// ======================================================
-
 let data = loadData();
 
-function loadData() {
-
-  try {
-
-    // New data
-    const saved = localStorage.getItem(KEY);
-
-    if (saved) {
-
-      const parsed = JSON.parse(saved);
-
-      if (!Array.isArray(parsed.workers)) {
-        parsed.workers = [];
-      }
-
-      if (!parsed.attendance) {
-        parsed.attendance = {};
-      }
-
-      parsed.workers.forEach(w => {
-
-        if (!w.id) {
-          w.id = crypto.randomUUID();
-        }
-
-        if (w.rate === undefined) {
-          w.rate = 0;
-        }
-
-        if (w.otRate === undefined) {
-          w.otRate = 0;
-        }
-
-        if (!w.phone) {
-          w.phone = "";
-        }
-
-      });
-
-      return parsed;
-    }
-
-
-    // Try old v3 data
-    const oldV3 =
-      localStorage.getItem(
-        "ctd_worker_hajeri_v3"
-      );
-
-    if (oldV3) {
-
-      const parsed = JSON.parse(oldV3);
-
-      if (Array.isArray(parsed.workers)) {
-
-        parsed.workers.forEach(w => {
-
-          if (!w.id) {
-            w.id = crypto.randomUUID();
-          }
-
-          if (w.otRate === undefined) {
-            w.otRate = 0;
-          }
-
-        });
-
-      }
-
-      return parsed;
-    }
-
-
-    // Try old v2 data
-    const oldV2 =
-      localStorage.getItem(
-        "ctd_worker_hajeri_v2"
-      );
-
-    if (oldV2) {
-
-      const parsed = JSON.parse(oldV2);
-
-      if (Array.isArray(parsed.workers)) {
-
-        parsed.workers.forEach(w => {
-
-          if (!w.id) {
-            w.id = crypto.randomUUID();
-          }
-
-          if (w.otRate === undefined) {
-            w.otRate = 0;
-          }
-
-        });
-
-      }
-
-      return parsed;
-    }
-
-
-    return defaultData;
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "Data loading error:",
-      error
-    );
-
-    return defaultData;
-
-  }
-
-}
-
-
-// ======================================================
-// SAVE DATA
-// ======================================================
-
-function saveData() {
-
-  localStorage.setItem(
-    KEY,
-    JSON.stringify(data)
-  );
-
-}
-
-
-// ======================================================
-// ELEMENTS
-// ======================================================
 
 const dateInput =
   document.getElementById("dateInput");
 
 const searchInput =
   document.getElementById("searchInput");
-
-const workerDropdown =
-  document.getElementById("workerDropdown");
 
 const workerTable =
   document.getElementById("workerTable");
@@ -198,17 +50,106 @@ const workerPhone =
 const editWorkerId =
   document.getElementById("editWorkerId");
 
+const workerSuggestions =
+  document.getElementById("workerSuggestions");
 
-// Selected worker filter
-let selectedWorkerId = "";
+const savedDates =
+  document.getElementById("savedDates");
 
+const dateStatus =
+  document.getElementById("dateStatus");
 
-// ======================================================
-// DATE
-// ======================================================
 
 dateInput.value = todayISO();
 
+
+
+/* =========================
+   LOAD DATA
+========================= */
+
+function loadData() {
+
+  try {
+
+    let saved =
+      localStorage.getItem(KEY);
+
+    if (!saved) {
+
+      saved =
+        localStorage.getItem(OLD_KEY);
+
+    }
+
+
+    if (!saved) {
+
+      return defaultData;
+
+    }
+
+
+    const parsed =
+      JSON.parse(saved);
+
+
+    if (!parsed.workers) {
+      parsed.workers = [];
+    }
+
+    if (!parsed.attendance) {
+      parsed.attendance = {};
+    }
+
+
+    parsed.workers.forEach(w => {
+
+      if (w.otRate === undefined) {
+        w.otRate = 0;
+      }
+
+      if (w.phone === undefined) {
+        w.phone = "";
+      }
+
+    });
+
+
+    return parsed;
+
+  }
+
+  catch (e) {
+
+    console.error(e);
+
+    return defaultData;
+
+  }
+
+}
+
+
+
+/* =========================
+   SAVE DATA
+========================= */
+
+function saveData() {
+
+  localStorage.setItem(
+    KEY,
+    JSON.stringify(data)
+  );
+
+}
+
+
+
+/* =========================
+   TODAY
+========================= */
 
 function todayISO() {
 
@@ -219,143 +160,76 @@ function todayISO() {
     -
     d.getTimezoneOffset() * 60000
   )
-    .toISOString()
-    .slice(0, 10);
+  .toISOString()
+  .slice(0, 10);
 
 }
 
+
+
+/* =========================
+   SELECTED DATE
+========================= */
 
 function selectedDate() {
 
-  return (
-    dateInput.value ||
-    todayISO()
-  );
+  return dateInput.value || todayISO();
 
 }
 
 
-// ======================================================
-// DATE FORMAT
-// ======================================================
+
+/* =========================
+   DATE FORMAT
+========================= */
 
 function formatDate(iso) {
 
-  const parts =
-    iso.split("-");
+  if (!iso) return "";
 
-  return (
-    parts[2] +
-    "-" +
-    parts[1] +
-    "-" +
-    parts[0]
-  );
+  const [
+    y,
+    m,
+    d
+  ] = iso.split("-");
 
-}
-
-
-// ======================================================
-// ATTENDANCE
-// IMPORTANT:
-// Only submitted attendance is counted.
-// ======================================================
-
-function getSavedAttendance(
-  workerId,
-  date
-) {
-
-  if (
-    !data.attendance ||
-    !data.attendance[date] ||
-    !data.attendance[date][workerId]
-  ) {
-
-    return null;
-
-  }
-
-  return data.attendance[date][workerId];
+  return `${d}-${m}-${y}`;
 
 }
 
 
-function getDisplayAttendance(
-  workerId,
-  date
-) {
 
-  const saved =
-    getSavedAttendance(
-      workerId,
-      date
-    );
+/* =========================
+   ATTENDANCE OBJECT
+========================= */
 
-
-  if (!saved) {
-
-    return {
-
-      status: "Present",
-
-      otHours: 0,
-
-      advance: 0,
-
-      payment: "Pending",
-
-      submitted: false
-
-    };
-
-  }
-
-
-  return {
-
-    status:
-      saved.status || "Present",
-
-    otHours:
-      Number(saved.otHours || 0),
-
-    advance:
-      Number(saved.advance || 0),
-
-    payment:
-      saved.payment || "Pending",
-
-    submitted:
-      saved.submitted === true
-
-  };
-
-}
-
-
-// ======================================================
-// SAVE DAILY ATTENDANCE
-// ======================================================
-
-function saveAttendance(
+function getAttendance(
   workerId,
   date,
-  values
+  create = true
 ) {
 
   if (!data.attendance[date]) {
+
+    if (!create) {
+      return null;
+    }
 
     data.attendance[date] = {};
 
   }
 
 
-  const old =
-    getSavedAttendance(
-      workerId,
-      date
-    ) || {
+  if (
+    !data.attendance[date][workerId]
+  ) {
+
+    if (!create) {
+      return null;
+    }
+
+
+    data.attendance[date][workerId] = {
 
       status: "Present",
 
@@ -369,129 +243,72 @@ function saveAttendance(
 
     };
 
-
-  data.attendance[date][workerId] = {
-
-    ...old,
-
-    ...values
-
-  };
-
-
-  saveData();
-
-}
-
-
-// ======================================================
-// SEARCH WORKER DROPDOWN
-// ======================================================
-
-function renderWorkerDropdown() {
-
-  const q =
-    searchInput.value
-      .trim()
-      .toLowerCase();
-
-
-  let workers =
-    data.workers.filter(w =>
-      w.name
-        .toLowerCase()
-        .includes(q)
-    );
-
-
-  workerDropdown.innerHTML = "";
-
-
-  if (!workers.length) {
-
-    workerDropdown.innerHTML = `
-      <div class="worker-option">
-        No worker found
-      </div>
-    `;
-
-    workerDropdown.classList.remove(
-      "hidden"
-    );
-
-    return;
   }
 
 
-  workers.forEach(w => {
-
-    const div =
-      document.createElement("div");
-
-    div.className =
-      "worker-option";
+  const a =
+    data.attendance[date][workerId];
 
 
-    div.innerHTML = `
-      <strong>
-        ${esc(w.name)}
-      </strong>
+  if (a.submitted === undefined) {
 
-      <span>
-        Daily Rate: ₹${Number(
-          w.rate || 0
-        ).toLocaleString("en-IN")}
-      </span>
-    `;
+    a.submitted = false;
+
+  }
 
 
-    div.onclick = function() {
+  if (a.payment === undefined) {
 
-      selectedWorkerId = w.id;
+    a.payment = "Pending";
 
-      searchInput.value =
-        w.name;
-
-      workerDropdown.classList.add(
-        "hidden"
-      );
-
-      render();
-
-    };
+  }
 
 
-    workerDropdown.appendChild(
-      div
-    );
+  if (a.otHours === undefined) {
 
-  });
+    a.otHours = 0;
+
+  }
 
 
-  workerDropdown.classList.remove(
-    "hidden"
-  );
+  if (a.advance === undefined) {
+
+    a.advance = 0;
+
+  }
+
+
+  return a;
 
 }
 
 
-// ======================================================
-// FILTER WORKERS
-// ======================================================
+
+/* =========================
+   SUBMITTED DATE CHECK
+========================= */
+
+function dateHasSubmitted(date) {
+
+  const day =
+    data.attendance[date];
+
+  if (!day) return false;
+
+
+  return Object.values(day)
+    .some(a => a && a.submitted === true);
+
+}
+
+
+
+/* =========================
+   WORKER SEARCH
+========================= */
 
 function filteredWorkers() {
 
-  // If worker selected
-  if (selectedWorkerId) {
-
-    return data.workers.filter(
-      w => w.id === selectedWorkerId
-    );
-
-  }
-
-
-  // Search typing
   const q =
     searchInput.value
       .trim()
@@ -514,18 +331,18 @@ function filteredWorkers() {
 }
 
 
-// ======================================================
-// MAIN RENDER
-// ======================================================
+
+/* =========================
+   RENDER
+========================= */
 
 function render() {
 
-  const date =
-    selectedDate();
-
-
   const workers =
     filteredWorkers();
+
+  const date =
+    selectedDate();
 
 
   document.getElementById(
@@ -534,9 +351,7 @@ function render() {
     formatDate(date);
 
 
-  // -----------------------------------------
-  // DAILY STATS
-  // -----------------------------------------
+  /* COUNTS */
 
   let present = 0;
 
@@ -548,30 +363,41 @@ function render() {
   data.workers.forEach(w => {
 
     const a =
-      getSavedAttendance(
+      getAttendance(
         w.id,
-        date
+        date,
+        false
       );
 
 
-    // IMPORTANT:
-    // Count ONLY submitted attendance
-
-    if (!a || a.submitted !== true) {
+    if (
+      !a ||
+      !a.submitted
+    ) {
       return;
     }
 
 
     if (a.status === "Present") {
+
       present++;
+
     }
 
-    else if (a.status === "Absent") {
+    else if (
+      a.status === "Absent"
+    ) {
+
       absent++;
+
     }
 
-    else if (a.status === "Half Day") {
+    else if (
+      a.status === "Half Day"
+    ) {
+
       half++;
+
     }
 
   });
@@ -601,172 +427,196 @@ function render() {
     half;
 
 
-  // -----------------------------------------
-  // DAILY TABLE
-  // -----------------------------------------
+  /* DAILY TABLE */
 
   workerTable.innerHTML =
-    workers.map(
-      (w, index) => {
+    workers.map((w, i) => {
 
-        const a =
-          getDisplayAttendance(
-            w.id,
-            date
-          );
-
-
-        const disabled =
-          a.submitted
-            ? "disabled"
-            : "";
+      const a =
+        getAttendance(
+          w.id,
+          date,
+          true
+        );
 
 
-        const attendanceButton =
-          a.submitted
-
-            ? `
-              <button
-                class="edit"
-                onclick="editAttendance('${w.id}')"
-              >
-                Edit
-              </button>
-            `
-
-            : `
-              <button
-                class="submit"
-                onclick="submitAttendance('${w.id}')"
-              >
-                Submit
-              </button>
-            `;
+      const submitted =
+        a.submitted === true;
 
 
-        return `
+      return `
 
-          <tr>
+        <tr>
 
-            <td>
-              ${index + 1}
-            </td>
-
-
-            <td>
-              <strong>
-                ${esc(w.name)}
-              </strong>
-            </td>
+          <td>
+            ${i + 1}
+          </td>
 
 
-            <td>
-              ₹${Number(
-                w.rate || 0
-              ).toLocaleString("en-IN")}
-            </td>
+          <td>
+            <strong>
+              ${esc(w.name)}
+            </strong>
+          </td>
 
 
-            <td>
+          <td>
+            ₹${Number(
+              w.rate || 0
+            ).toLocaleString("en-IN")}
+          </td>
 
-              <select
-                id="status_${w.id}"
-                ${disabled}
-              >
 
-                <option value="Present"
-                  ${a.status === "Present"
-                    ? "selected"
-                    : ""}
+          <td>
+
+            <select
+              class="status-select"
+              ${submitted ? "disabled" : ""}
+              onchange="
+                changeStatus(
+                  '${w.id}',
+                  this.value
+                )
+              "
+            >
+
+              <option value="Present"
+                ${a.status === "Present"
+                  ? "selected"
+                  : ""}>
+                Present
+              </option>
+
+              <option value="Absent"
+                ${a.status === "Absent"
+                  ? "selected"
+                  : ""}>
+                Absent
+              </option>
+
+              <option value="Half Day"
+                ${a.status === "Half Day"
+                  ? "selected"
+                  : ""}>
+                Half Day
+              </option>
+
+            </select>
+
+          </td>
+
+
+          <td>
+
+            <input
+              class="small-input"
+              type="number"
+              min="0"
+              step="0.5"
+              value="${a.otHours || 0}"
+              ${submitted ? "disabled" : ""}
+              onchange="
+                changeOT(
+                  '${w.id}',
+                  this.value
+                )
+              "
+            >
+
+          </td>
+
+
+          <td>
+
+            <input
+              class="small-input"
+              type="number"
+              min="0"
+              step="1"
+              value="${a.advance || 0}"
+              ${submitted ? "disabled" : ""}
+              onchange="
+                changeAdvance(
+                  '${w.id}',
+                  this.value
+                )
+              "
+            >
+
+          </td>
+
+
+          <td>
+
+            ${
+              submitted
+
+              ?
+
+              `
+                <button
+                  class="edit attendance-edit"
+                  onclick="
+                    editAttendance(
+                      '${w.id}'
+                    )
+                  "
                 >
-                  Present
-                </option>
+                  Edit
+                </button>
+              `
 
+              :
 
-                <option value="Absent"
-                  ${a.status === "Absent"
-                    ? "selected"
-                    : ""}
+              `
+                <button
+                  class="submit-btn"
+                  onclick="
+                    submitAttendance(
+                      '${w.id}'
+                    )
+                  "
                 >
-                  Absent
-                </option>
+                  Submit
+                </button>
+              `
+            }
+
+          </td>
 
 
-                <option value="Half Day"
-                  ${a.status === "Half Day"
-                    ? "selected"
-                    : ""}
-                >
-                  Half Day
-                </option>
+          <td class="actions">
 
-              </select>
-
-            </td>
-
-
-            <td>
-
-              <input
-                id="ot_${w.id}"
-                class="small-input"
-                type="number"
-                min="0"
-                step="0.5"
-                value="${a.otHours}"
-                ${disabled}
-              >
-
-            </td>
+            <button
+              class="edit"
+              onclick="
+                openEdit(
+                  '${w.id}'
+                )
+              "
+            >
+              Edit
+            </button>
 
 
-            <td>
+            <button
+              class="danger"
+              onclick="
+                deleteWorker(
+                  '${w.id}'
+                )
+              "
+            >
+              Delete
+            </button>
 
-              <input
-                id="advance_${w.id}"
-                class="small-input"
-                type="number"
-                min="0"
-                step="1"
-                value="${a.advance}"
-                ${disabled}
-              >
+          </td>
 
-            </td>
+        </tr>
 
+      `;
 
-            <td>
-
-              ${attendanceButton}
-
-            </td>
-
-
-            <td class="actions">
-
-              <button
-                class="edit"
-                onclick="openEdit('${w.id}')"
-              >
-                Edit
-              </button>
-
-
-              <button
-                class="danger"
-                onclick="deleteWorker('${w.id}')"
-              >
-                Delete
-              </button>
-
-            </td>
-
-          </tr>
-
-        `;
-
-      }
-    ).join("");
+    }).join("");
 
 
   document.getElementById(
@@ -777,62 +627,226 @@ function render() {
       : "block";
 
 
+  renderDateStatus();
+
+  renderSavedDates();
+
   renderMonthly();
+
+  renderSuggestions();
 
 }
 
 
-// ======================================================
-// SUBMIT ATTENDANCE
-// ======================================================
 
-window.submitAttendance =
-function(workerId) {
+/* =========================
+   DATE STATUS
+========================= */
+
+function renderDateStatus() {
 
   const date =
     selectedDate();
 
 
-  const status =
-    document.getElementById(
-      `status_${workerId}`
-    ).value;
+  if (
+    dateHasSubmitted(date)
+  ) {
+
+    dateStatus.innerHTML =
+      `<span class="saved-badge">
+        ✓ Hajeri Submitted
+      </span>`;
+
+  }
+
+  else {
+
+    dateStatus.innerHTML =
+      `<span class="not-saved-badge">
+        Hajeri Not Submitted
+      </span>`;
+
+  }
+
+}
 
 
-  const otHours =
-    Number(
-      document.getElementById(
-        `ot_${workerId}`
-      ).value || 0
+
+/* =========================
+   SAVED DATES
+========================= */
+
+function renderSavedDates() {
+
+  const dates =
+    Object.keys(
+      data.attendance
+    )
+    .filter(date =>
+      dateHasSubmitted(date)
+    )
+    .sort();
+
+
+  if (!dates.length) {
+
+    savedDates.innerHTML =
+      `<span class="no-dates">
+        No submitted attendance dates yet
+      </span>`;
+
+    return;
+
+  }
+
+
+  savedDates.innerHTML =
+    dates.map(date => {
+
+      const selected =
+        date === selectedDate();
+
+
+      return `
+
+        <button
+          type="button"
+          class="
+            saved-date
+            ${selected ? "selected-date" : ""}
+          "
+          onclick="
+            selectSavedDate(
+              '${date}'
+            )
+          "
+        >
+          ✓ ${formatDate(date)}
+        </button>
+
+      `;
+
+    }).join("");
+
+}
+
+
+
+/* =========================
+   SELECT SAVED DATE
+========================= */
+
+window.selectSavedDate =
+function(date) {
+
+  dateInput.value = date;
+
+  searchInput.value = "";
+
+  render();
+
+};
+
+
+
+/* =========================
+   WORKER SUGGESTIONS
+========================= */
+
+function renderSuggestions() {
+
+  const q =
+    searchInput.value
+      .trim()
+      .toLowerCase();
+
+
+  if (!q) {
+
+    workerSuggestions.classList.remove(
+      "show"
+    );
+
+    workerSuggestions.innerHTML =
+      "";
+
+    return;
+
+  }
+
+
+  const matches =
+    data.workers.filter(w =>
+      w.name
+        .toLowerCase()
+        .includes(q)
     );
 
 
-  const advance =
-    Number(
-      document.getElementById(
-        `advance_${workerId}`
-      ).value || 0
+  if (!matches.length) {
+
+    workerSuggestions.innerHTML =
+      `<div class="no-worker">
+        Worker not found
+      </div>`;
+
+    workerSuggestions.classList.add(
+      "show"
+    );
+
+    return;
+
+  }
+
+
+  workerSuggestions.innerHTML =
+    matches.map(w => `
+
+      <button
+        type="button"
+        onclick="
+          selectWorker(
+            '${w.id}'
+          )
+        "
+      >
+        ${esc(w.name)}
+      </button>
+
+    `).join("");
+
+
+  workerSuggestions.classList.add(
+    "show"
+  );
+
+}
+
+
+
+/* =========================
+   SELECT WORKER
+========================= */
+
+window.selectWorker =
+function(id) {
+
+  const w =
+    data.workers.find(
+      x => x.id === id
     );
 
 
-  saveAttendance(
-    workerId,
-    date,
-    {
+  if (!w) return;
 
-      status:
-        status,
 
-      otHours:
-        otHours,
+  searchInput.value =
+    w.name;
 
-      advance:
-        advance,
 
-      submitted:
-        true
-
-    }
+  workerSuggestions.classList.remove(
+    "show"
   );
 
 
@@ -841,25 +855,166 @@ function(workerId) {
 };
 
 
-// ======================================================
-// EDIT ATTENDANCE
-// ======================================================
 
-window.editAttendance =
-function(workerId) {
+/* =========================
+   SHOW ALL
+========================= */
+
+document.getElementById(
+  "showAllBtn"
+).onclick = function() {
+
+  searchInput.value = "";
+
+  workerSuggestions.classList.remove(
+    "show"
+  );
+
+  workerSuggestions.innerHTML =
+    "";
+
+  render();
+
+};
+
+
+
+/* =========================
+   CHANGE STATUS
+========================= */
+
+window.changeStatus =
+function(id, status) {
+
+  const a =
+    getAttendance(
+      id,
+      selectedDate()
+    );
+
+
+  if (a.submitted) {
+    return;
+  }
+
+
+  a.status = status;
+
+  saveData();
+
+  render();
+
+};
+
+
+
+/* =========================
+   CHANGE OT
+========================= */
+
+window.changeOT =
+function(id, value) {
+
+  const a =
+    getAttendance(
+      id,
+      selectedDate()
+    );
+
+
+  if (a.submitted) {
+    return;
+  }
+
+
+  a.otHours =
+    Number(value || 0);
+
+
+  saveData();
+
+  render();
+
+};
+
+
+
+/* =========================
+   CHANGE ADVANCE
+========================= */
+
+window.changeAdvance =
+function(id, value) {
+
+  const a =
+    getAttendance(
+      id,
+      selectedDate()
+    );
+
+
+  if (a.submitted) {
+    return;
+  }
+
+
+  a.advance =
+    Number(value || 0);
+
+
+  saveData();
+
+  render();
+
+};
+
+
+
+/* =========================
+   SUBMIT ATTENDANCE
+========================= */
+
+window.submitAttendance =
+function(id) {
 
   const date =
     selectedDate();
 
 
   const a =
-    getSavedAttendance(
-      workerId,
+    getAttendance(
+      id,
       date
     );
 
 
-  if (!a) return;
+  a.submitted = true;
+
+
+  saveData();
+
+  render();
+
+};
+
+
+
+/* =========================
+   EDIT ATTENDANCE
+========================= */
+
+window.editAttendance =
+function(id) {
+
+  const date =
+    selectedDate();
+
+
+  const a =
+    getAttendance(
+      id,
+      date
+    );
 
 
   a.submitted = false;
@@ -867,19 +1022,22 @@ function(workerId) {
 
   saveData();
 
-
   render();
 
 };
 
 
-// ======================================================
-// MONTHLY REPORT
-// ======================================================
+
+/* =========================
+   MONTHLY SUMMARY
+========================= */
 
 function renderMonthly() {
 
-  const [year, month] =
+  const [
+    year,
+    month
+  ] =
     selectedDate()
       .split("-")
       .map(Number);
@@ -906,13 +1064,9 @@ function renderMonthly() {
 
       let advance = 0;
 
-      let payment =
+      let lastPayment =
         "Pending";
 
-
-      // ---------------------------------------
-      // ONLY SUBMITTED DAYS
-      // ---------------------------------------
 
       for (
         let d = 1;
@@ -921,22 +1075,24 @@ function renderMonthly() {
       ) {
 
         const iso =
-          `${year}-${String(month)
-            .padStart(2, "0")}-${String(d)
-            .padStart(2, "0")}`;
+          `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 
         const a =
-          getSavedAttendance(
+          getAttendance(
             w.id,
-            iso
+            iso,
+            false
           );
 
 
-        // No attendance submitted
+        /* IMPORTANT:
+           ONLY SUBMITTED
+        */
+
         if (
           !a ||
-          a.submitted !== true
+          !a.submitted
         ) {
 
           continue;
@@ -982,10 +1138,11 @@ function renderMonthly() {
 
 
         if (
-          a.payment === "Paid"
+          a.payment
         ) {
 
-          payment = "Paid";
+          lastPayment =
+            a.payment;
 
         }
 
@@ -999,12 +1156,16 @@ function renderMonthly() {
 
       const grossSalary =
         payableDays *
-        Number(w.rate || 0);
+        Number(
+          w.rate || 0
+        );
 
 
       const overtimeAmount =
         otHours *
-        Number(w.otRate || 0);
+        Number(
+          w.otRate || 0
+        );
 
 
       const totalSalary =
@@ -1015,7 +1176,8 @@ function renderMonthly() {
       const netSalary =
         Math.max(
           0,
-          totalSalary - advance
+          totalSalary -
+          advance
         );
 
 
@@ -1029,54 +1191,42 @@ function renderMonthly() {
             </strong>
           </td>
 
-
           <td>
             ${present}
           </td>
-
 
           <td>
             ${half}
           </td>
 
-
           <td>
             ${absent}
           </td>
-
 
           <td>
             ${otHours}
           </td>
 
-
           <td>
             ${payableDays}
           </td>
 
-
           <td>
-            ₹${totalSalary.toLocaleString(
-              "en-IN"
-            )}
+            ₹${grossSalary.toLocaleString("en-IN")}
           </td>
 
-
           <td>
-            ₹${advance.toLocaleString(
-              "en-IN"
-            )}
+            ₹${advance.toLocaleString("en-IN")}
           </td>
-
 
           <td>
             <strong>
-              ₹${netSalary.toLocaleString(
-                "en-IN"
-              )}
+              ₹${(
+                netSalary +
+                overtimeAmount
+              ).toLocaleString("en-IN")}
             </strong>
           </td>
-
 
           <td>
 
@@ -1091,17 +1241,16 @@ function renderMonthly() {
 
               <option
                 value="Pending"
-                ${payment === "Pending"
+                ${lastPayment === "Pending"
                   ? "selected"
                   : ""}
               >
                 Pending
               </option>
 
-
               <option
                 value="Paid"
-                ${payment === "Paid"
+                ${lastPayment === "Paid"
                   ? "selected"
                   : ""}
               >
@@ -1121,14 +1270,18 @@ function renderMonthly() {
 }
 
 
-// ======================================================
-// MONTHLY PAYMENT
-// ======================================================
+
+/* =========================
+   MONTHLY PAYMENT
+========================= */
 
 window.changeMonthlyPayment =
-function(workerId, value) {
+function(id, value) {
 
-  const [year, month] =
+  const [
+    year,
+    month
+  ] =
     selectedDate()
       .split("-")
       .map(Number);
@@ -1149,25 +1302,24 @@ function(workerId, value) {
   ) {
 
     const iso =
-      `${year}-${String(month)
-        .padStart(2, "0")}-${String(d)
-        .padStart(2, "0")}`;
+      `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 
     const a =
-      getSavedAttendance(
-        workerId,
-        iso
+      getAttendance(
+        id,
+        iso,
+        false
       );
 
 
-    // Only submitted attendance
     if (
       a &&
-      a.submitted === true
+      a.submitted
     ) {
 
-      a.payment = value;
+      a.payment =
+        value;
 
     }
 
@@ -1181,54 +1333,10 @@ function(workerId, value) {
 };
 
 
-// ======================================================
-// ADD WORKER
-// ======================================================
 
-document.getElementById(
-  "addWorkerBtn"
-).onclick =
-function() {
-
-  document.getElementById(
-    "modalTitle"
-  ).textContent =
-    "Add Worker";
-
-
-  editWorkerId.value =
-    "";
-
-
-  workerName.value =
-    "";
-
-
-  workerRate.value =
-    "";
-
-
-  workerOTRate.value =
-    "";
-
-
-  workerPhone.value =
-    "";
-
-
-  modal.classList.remove(
-    "hidden"
-  );
-
-
-  workerName.focus();
-
-};
-
-
-// ======================================================
-// OPEN EDIT WORKER
-// ======================================================
+/* =========================
+   ADD / EDIT WORKER
+========================= */
 
 window.openEdit =
 function(id) {
@@ -1278,9 +1386,146 @@ function(id) {
 };
 
 
-// ======================================================
-// SAVE WORKER
-// ======================================================
+
+document.getElementById(
+  "addWorkerBtn"
+).onclick =
+function() {
+
+  document.getElementById(
+    "modalTitle"
+  ).textContent =
+    "Add Worker";
+
+
+  editWorkerId.value =
+    "";
+
+
+  workerName.value =
+    "";
+
+
+  workerRate.value =
+    "";
+
+
+  workerOTRate.value =
+    "";
+
+
+  workerPhone.value =
+    "";
+
+
+  modal.classList.remove(
+    "hidden"
+  );
+
+
+  workerName.focus();
+
+};
+
+
+
+/* =========================
+   DELETE WORKER
+========================= */
+
+window.deleteWorker =
+function(id) {
+
+  const w =
+    data.workers.find(
+      x => x.id === id
+    );
+
+
+  if (!w) return;
+
+
+  if (
+    !confirm(
+      `Delete worker "${w.name}"?`
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  data.workers =
+    data.workers.filter(
+      x => x.id !== id
+    );
+
+
+  Object.keys(
+    data.attendance
+  ).forEach(date => {
+
+    delete data.attendance[
+      date
+    ][id];
+
+  });
+
+
+  saveData();
+
+  render();
+
+};
+
+
+
+/* =========================
+   MODAL
+========================= */
+
+function closeModal() {
+
+  modal.classList.add(
+    "hidden"
+  );
+
+}
+
+
+document.getElementById(
+  "closeModal"
+).onclick =
+  closeModal;
+
+
+document.getElementById(
+  "cancelBtn"
+).onclick =
+  closeModal;
+
+
+modal.addEventListener(
+  "click",
+  function(e) {
+
+    if (
+      e.target === modal
+    ) {
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+
+/* =========================
+   SAVE WORKER
+========================= */
 
 document.getElementById(
   "saveWorkerBtn"
@@ -1304,29 +1549,9 @@ function() {
   }
 
 
-  const rate =
-    Number(
-      workerRate.value || 0
-    );
-
-
-  const otRate =
-    Number(
-      workerOTRate.value || 0
-    );
-
-
-  const phone =
-    workerPhone.value.trim();
-
-
   const id =
     editWorkerId.value;
 
-
-  // ---------------------------------------
-  // EDIT
-  // ---------------------------------------
 
   if (id) {
 
@@ -1342,26 +1567,25 @@ function() {
         name;
 
       w.rate =
-        rate;
+        Number(
+          workerRate.value || 0
+        );
 
       w.otRate =
-        otRate;
+        Number(
+          workerOTRate.value || 0
+        );
 
       w.phone =
-        phone;
+        workerPhone.value.trim();
 
     }
 
   }
 
-
-  // ---------------------------------------
-  // ADD
-  // ---------------------------------------
-
   else {
 
-    const newWorker = {
+    data.workers.push({
 
       id:
         crypto.randomUUID(),
@@ -1370,119 +1594,38 @@ function() {
         name,
 
       rate:
-        rate,
+        Number(
+          workerRate.value || 0
+        ),
 
       otRate:
-        otRate,
+        Number(
+          workerOTRate.value || 0
+        ),
 
       phone:
-        phone
+        workerPhone.value.trim()
 
-    };
-
-
-    data.workers.push(
-      newWorker
-    );
+    });
 
   }
 
 
-  // SAVE
   saveData();
-
-
-  // Clear search
-  selectedWorkerId =
-    "";
-
-
-  searchInput.value =
-    "";
-
 
   closeModal();
 
-
-  render();
-
-
-  // IMPORTANT confirmation
-  console.log(
-    "Worker saved successfully:",
-    name
-  );
-
-};
-
-
-// ======================================================
-// DELETE WORKER
-// ======================================================
-
-window.deleteWorker =
-function(id) {
-
-  const w =
-    data.workers.find(
-      x => x.id === id
-    );
-
-
-  if (!w) return;
-
-
-  const ok =
-    confirm(
-      `Delete worker "${w.name}"?`
-    );
-
-
-  if (!ok) return;
-
-
-  data.workers =
-    data.workers.filter(
-      x => x.id !== id
-    );
-
-
-  Object.keys(
-    data.attendance
-  ).forEach(date => {
-
-    if (
-      data.attendance[date]
-    ) {
-
-      delete data.attendance[
-        date
-      ][id];
-
-    }
-
-  });
-
-
-  saveData();
-
-
-  selectedWorkerId =
-    "";
-
-
-  searchInput.value =
-    "";
-
+  searchInput.value = "";
 
   render();
 
 };
 
 
-// ======================================================
-// MARK ALL PRESENT
-// ======================================================
+
+/* =========================
+   MARK ALL PRESENT
+========================= */
 
 document.getElementById(
   "allPresentBtn"
@@ -1492,9 +1635,7 @@ function() {
   if (
     !data.workers.length
   ) {
-
     return;
-
   }
 
 
@@ -1504,25 +1645,21 @@ function() {
 
   data.workers.forEach(w => {
 
-    saveAttendance(
-      w.id,
-      date,
-      {
+    const a =
+      getAttendance(
+        w.id,
+        date
+      );
 
-        status:
-          "Present",
 
-        otHours:
-          0,
+    if (
+      !a.submitted
+    ) {
 
-        advance:
-          0,
+      a.status =
+        "Present";
 
-        submitted:
-          true
-
-      }
-    );
+    }
 
   });
 
@@ -1534,143 +1671,38 @@ function() {
 };
 
 
-// ======================================================
-// CLEAR WORKER FILTER
-// ======================================================
 
-document.getElementById(
-  "clearWorkerBtn"
-).onclick =
-function() {
-
-  selectedWorkerId =
-    "";
-
-
-  searchInput.value =
-    "";
-
-
-  workerDropdown.classList.add(
-    "hidden"
-  );
-
-
-  render();
-
-};
-
-
-// ======================================================
-// SEARCH INPUT
-// ======================================================
-
-searchInput.addEventListener(
-  "focus",
-  function() {
-
-    renderWorkerDropdown();
-
-  }
-);
-
-
-searchInput.addEventListener(
-  "input",
-  function() {
-
-    selectedWorkerId =
-      "";
-
-
-    renderWorkerDropdown();
-
-    render();
-
-  }
-);
-
-
-// ======================================================
-// DATE CHANGE
-// ======================================================
+/* =========================
+   DATE CHANGE
+========================= */
 
 dateInput.onchange =
 function() {
 
+  searchInput.value = "";
+
   render();
 
 };
 
 
-// ======================================================
-// CLOSE DROPDOWN OUTSIDE
-// ======================================================
 
-document.addEventListener(
-  "click",
-  function(e) {
+/* =========================
+   SEARCH
+========================= */
 
-    if (
-      !e.target.closest(
-        ".worker-picker"
-      )
-    ) {
+searchInput.oninput =
+function() {
 
-      workerDropdown.classList.add(
-        "hidden"
-      );
+  render();
 
-    }
-
-  }
-);
+};
 
 
-// ======================================================
-// MODAL CLOSE
-// ======================================================
 
-function closeModal() {
-
-  modal.classList.add(
-    "hidden"
-  );
-
-}
-
-
-document.getElementById(
-  "closeModal"
-).onclick =
-closeModal;
-
-
-document.getElementById(
-  "cancelBtn"
-).onclick =
-closeModal;
-
-
-modal.addEventListener(
-  "click",
-  function(e) {
-
-    if (
-      e.target === modal
-    ) {
-
-      closeModal();
-
-    }
-
-  }
-);
-
-
-// ======================================================
-// PRINT
-// ======================================================
+/* =========================
+   PRINT
+========================= */
 
 document.getElementById(
   "printBtn"
@@ -1682,9 +1714,10 @@ function() {
 };
 
 
-// ======================================================
-// EXPORT CSV
-// ======================================================
+
+/* =========================
+   EXPORT CSV
+========================= */
 
 document.getElementById(
   "exportBtn"
@@ -1694,13 +1727,21 @@ function() {
   const rows = [[
 
     "Date",
+
     "Worker Name",
+
     "Daily Rate",
+
     "Status",
+
     "OT Hours",
+
     "Advance",
+
     "OT Rate",
+
     "OT Amount",
+
     "Submitted"
 
   ]];
@@ -1717,15 +1758,16 @@ function() {
     data.workers.forEach(w => {
 
       const a =
-        getSavedAttendance(
+        getAttendance(
           w.id,
-          date
+          date,
+          false
         );
 
 
       if (
         !a ||
-        a.submitted !== true
+        !a.submitted
       ) {
 
         return;
@@ -1773,8 +1815,6 @@ function() {
 
       selectedDate(),
 
-      "No submitted attendance",
-
       "",
 
       "",
@@ -1787,7 +1827,9 @@ function() {
 
       "",
 
-      "No"
+      "",
+
+      "No submitted attendance"
 
     ]);
 
@@ -1795,19 +1837,15 @@ function() {
 
 
   const csv =
-    rows
-      .map(row =>
-        row
-          .map(value =>
-            `"${String(value)
-              .replaceAll(
-                '"',
-                '""'
-              )}"`
-          )
-          .join(",")
-      )
-      .join("\n");
+    rows.map(row =>
+      row.map(value =>
+        `"${String(value)
+          .replaceAll(
+            '"',
+            '""'
+          )}"`
+      ).join(",")
+    ).join("\n");
 
 
   const blob =
@@ -1821,11 +1859,15 @@ function() {
 
 
   const a =
-    document.createElement("a");
+    document.createElement(
+      "a"
+    );
 
 
   a.href =
-    URL.createObjectURL(blob);
+    URL.createObjectURL(
+      blob
+    );
 
 
   a.download =
@@ -1834,66 +1876,67 @@ function() {
 
   a.click();
 
-
-  URL.revokeObjectURL(
-    a.href
-  );
-
 };
 
 
-// ======================================================
-// ESC HTML
-// ======================================================
+
+/* =========================
+   ESCAPE HTML
+========================= */
 
 function esc(s) {
 
-  return String(s)
-    .replace(
-      /[&<>"']/g,
-      function(c) {
+  return String(s).replace(
+    /[&<>"']/g,
+    c => ({
 
-        return {
+      "&":
+        "&amp;",
 
-          "&":
-            "&amp;",
+      "<":
+        "&lt;",
 
-          "<":
-            "&lt;",
+      ">":
+        "&gt;",
 
-          ">":
-            "&gt;",
+      '"':
+        "&quot;",
 
-          '"':
-            "&quot;",
+      "'":
+        "&#39;"
 
-          "'":
-            "&#39;"
-
-        }[c];
-
-      }
-    );
+    }[c])
+  );
 
 }
 
 
-// ======================================================
-// INITIAL RENDER
-// ======================================================
+
+/* =========================
+   CLOSE SEARCH
+========================= */
+
+document.addEventListener(
+  "click",
+  function(e) {
+
+    if (
+      !e.target.closest(
+        ".grow"
+      )
+    ) {
+
+      workerSuggestions.classList.remove(
+        "show"
+      );
+
+    }
+
+  }
+);
+
+
+
+/* START */
 
 render();
-
-
-// ======================================================
-// SAVE CHECK
-// ======================================================
-
-console.log(
-  "CTD Worker Hajeri loaded"
-);
-
-console.log(
-  "Workers:",
-  data.workers
-);
