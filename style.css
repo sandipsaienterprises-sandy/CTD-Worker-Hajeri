@@ -10,7 +10,7 @@ body {
 }
 
 .topbar {
-  background: white;
+  background: #ffffff;
   padding: 24px 5%;
   display: flex;
   justify-content: space-between;
@@ -40,11 +40,11 @@ body {
 }
 
 .card {
-  background: #fff;
+  background: #ffffff;
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 3px 16px rgba(0, 0, 0, .06);
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.06);
 }
 
 .toolbar {
@@ -73,7 +73,14 @@ select {
   border-radius: 9px;
   padding: 0 12px;
   font-size: 15px;
-  background: #fff;
+  background: #ffffff;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #1769e0;
+  box-shadow: 0 0 0 3px rgba(23, 105, 224, 0.10);
 }
 
 .small-input {
@@ -93,12 +100,12 @@ button {
 }
 
 button:hover {
-  opacity: .9;
+  opacity: 0.9;
 }
 
 .primary {
   background: #1769e0;
-  color: white;
+  color: #ffffff;
 }
 
 .secondary {
@@ -108,12 +115,12 @@ button:hover {
 
 .danger {
   background: #ef4444;
-  color: white;
+  color: #ffffff;
 }
 
 .edit {
   background: #f4b000;
-  color: white;
+  color: #ffffff;
 }
 
 .stats {
@@ -124,11 +131,11 @@ button:hover {
 }
 
 .stat {
-  background: white;
+  background: #ffffff;
   border-radius: 16px;
   padding: 20px;
   text-align: center;
-  box-shadow: 0 3px 16px rgba(0, 0, 0, .05);
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.05);
 }
 
 .stat strong {
@@ -166,7 +173,7 @@ button:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 1000px;
 }
 
 th,
@@ -180,6 +187,7 @@ th {
   font-size: 13px;
   color: #697386;
   background: #fafbfc;
+  white-space: nowrap;
 }
 
 td {
@@ -205,7 +213,7 @@ td {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(12, 20, 35, .48);
+  background: rgba(12, 20, 35, 0.48);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -214,16 +222,16 @@ td {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .modal-box {
-  background: white;
+  background: #ffffff;
   width: 100%;
   max-width: 450px;
   border-radius: 16px;
   padding: 22px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, .2);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
 }
 
 .modal-head {
@@ -255,11 +263,13 @@ td {
   margin-top: 8px;
 }
 
-/* Print Report */
+
+/* PRINT */
+
 @media print {
 
   body {
-    background: white;
+    background: #ffffff;
   }
 
   .topbar {
@@ -289,12 +299,12 @@ td {
 
   table {
     min-width: 0;
-    font-size: 11px;
   }
 
   th,
   td {
     padding: 6px;
+    font-size: 11px;
   }
 
   .modal {
@@ -302,7 +312,9 @@ td {
   }
 }
 
-/* Mobile */
+
+/* MOBILE */
+
 @media (max-width: 800px) {
 
   .topbar {
@@ -347,4 +359,5 @@ td {
   .small-input {
     width: 80px;
   }
+
 }
