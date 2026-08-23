@@ -1,86 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>CTD Worker Hajeri</title>
-  <link rel="stylesheet" href="style.css">
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
 
 <body>
 
 <header class="topbar">
+
   <div>
     <h1>CTD Worker Hajeri</h1>
-    <p>Worker Attendance & Salary Management</p>
+    <p>Worker Attendance Management</p>
   </div>
 
   <div class="top-actions">
-    <button id="printBtn" class="secondary">Print Report</button>
-    <button id="exportBtn" class="secondary">Export CSV</button>
+
+    <button
+      id="printBtn"
+      class="secondary"
+    >
+      Print Report
+    </button>
+
+    <button
+      id="exportBtn"
+      class="secondary"
+    >
+      Export CSV
+    </button>
+
   </div>
+
 </header>
+
 
 <main class="container">
 
-  <!-- Toolbar -->
+  <!-- DATE + WORKER SELECT -->
+
   <section class="card toolbar">
 
     <div>
+
       <label>Date</label>
-      <input type="date" id="dateInput">
+
+      <input
+        type="date"
+        id="dateInput"
+      >
+
     </div>
+
 
     <div class="grow">
-      <label>Search Worker</label>
-      <input type="text" id="searchInput"
-             placeholder="Search worker name">
+
+      <label>Select Worker</label>
+
+      <select id="workerSelect">
+        <option value="">
+          All Workers
+        </option>
+      </select>
+
     </div>
 
-    <button id="addWorkerBtn" class="primary">
+
+    <button
+      id="addWorkerBtn"
+      class="primary"
+    >
       + Add Worker
     </button>
 
   </section>
 
 
-  <!-- Statistics -->
+  <!-- STATS -->
+
   <section class="stats">
 
     <div class="stat">
+
       <strong id="totalCount">0</strong>
+
       <span>Total</span>
+
     </div>
 
+
     <div class="stat">
+
       <strong id="presentCount">0</strong>
+
       <span>Present</span>
+
     </div>
 
+
     <div class="stat">
+
       <strong id="absentCount">0</strong>
+
       <span>Absent</span>
+
     </div>
 
+
     <div class="stat">
+
       <strong id="halfCount">0</strong>
+
       <span>Half Day</span>
+
     </div>
 
   </section>
 
 
-  <!-- Daily Attendance -->
+  <!-- DAILY HAJERI -->
+
   <section class="card">
 
     <div class="section-title">
 
       <div>
+
         <h2>Daily Hajeri</h2>
+
         <p id="selectedDateLabel"></p>
+
       </div>
 
-      <button id="allPresentBtn" class="secondary">
+
+      <button
+        id="allPresentBtn"
+        class="secondary"
+      >
         Mark All Present
       </button>
 
@@ -92,16 +160,27 @@
       <table>
 
         <thead>
+
           <tr>
+
             <th>#</th>
+
             <th>Worker Name</th>
+
             <th>Daily Rate</th>
+
             <th>Status</th>
+
             <th>OT Hours</th>
+
             <th>Advance ₹</th>
+
             <th>Actions</th>
+
           </tr>
+
         </thead>
+
 
         <tbody id="workerTable"></tbody>
 
@@ -109,21 +188,31 @@
 
     </div>
 
-    <div id="emptyState" class="empty">
+
+    <div
+      id="emptyState"
+      class="empty"
+    >
       No workers found.
     </div>
 
   </section>
 
 
-  <!-- Monthly Salary -->
+  <!-- MONTHLY SUMMARY -->
+
   <section class="card">
 
     <div class="section-title">
 
       <div>
+
         <h2>Monthly Salary Summary</h2>
-        <p>Attendance and salary summary for selected month</p>
+
+        <p>
+          Attendance and salary summary
+        </p>
+
       </div>
 
     </div>
@@ -134,19 +223,33 @@
       <table>
 
         <thead>
+
           <tr>
+
             <th>Worker</th>
+
             <th>Present</th>
+
             <th>Half Day</th>
+
             <th>Absent</th>
+
             <th>OT Hours</th>
+
             <th>Payable Days</th>
+
             <th>Gross Salary</th>
+
             <th>Advance</th>
+
             <th>Net Salary</th>
+
             <th>Payment</th>
+
           </tr>
+
         </thead>
+
 
         <tbody id="monthlyTable"></tbody>
 
@@ -159,17 +262,25 @@
 </main>
 
 
-<!-- Add / Edit Worker Modal -->
+<!-- ADD / EDIT WORKER -->
 
-<div id="modal" class="modal hidden">
+<div
+  id="modal"
+  class="modal hidden"
+>
 
   <div class="modal-box">
 
     <div class="modal-head">
 
-      <h2 id="modalTitle">Add Worker</h2>
+      <h2 id="modalTitle">
+        Add Worker
+      </h2>
 
-      <button id="closeModal" class="close">
+      <button
+        id="closeModal"
+        class="close"
+      >
         ×
       </button>
 
@@ -192,7 +303,7 @@
       type="number"
       min="0"
       step="1"
-      placeholder="0"
+      placeholder="500"
     >
 
 
@@ -203,7 +314,7 @@
       type="number"
       min="0"
       step="1"
-      placeholder="Optional"
+      placeholder="0"
     >
 
 
@@ -224,11 +335,17 @@
 
     <div class="modal-actions">
 
-      <button id="cancelBtn" class="secondary">
+      <button
+        id="cancelBtn"
+        class="secondary"
+      >
         Cancel
       </button>
 
-      <button id="saveWorkerBtn" class="primary">
+      <button
+        id="saveWorkerBtn"
+        class="primary"
+      >
         Save Worker
       </button>
 
