@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTD Worker Hajeri</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>CTD Worker Hajeri</h1>
+        <p>Worker Attendance Management</p>
+      </div>
+      <button id="exportBtn" class="secondary">Export CSV</button>
+    </header>
+
+    <section class="card controls">
+      <label>Date
+        <input type="date" id="dateInput">
+      </label>
+      <label>Search Worker
+        <input type="search" id="searchInput" placeholder="Search name...">
+      </label>
+      <button id="addBtn">+ Add Worker</button>
+    </section>
+
+    <section class="summary">
+      <div class="stat"><b id="totalCount">0</b><span>Total</span></div>
+      <div class="stat"><b id="presentCount">0</b><span>Present</span></div>
+      <div class="stat"><b id="absentCount">0</b><span>Absent</span></div>
+    </section>
+
+    <section class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Worker Name</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="workerTable"></tbody>
+        </table>
+      </div>
+      <p id="emptyMsg" class="empty">No workers added yet. Click “+ Add Worker”.</p>
+    </section>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <h2 id="modalTitle">Add Worker</h2>
+      <input type="hidden" id="editIndex">
+      <label>Worker Name
+        <input id="workerName" type="text" placeholder="Enter worker name" autocomplete="off">
+      </label>
+      <div class="modal-actions">
+        <button id="cancelBtn" class="secondary">Cancel</button>
+        <button id="saveBtn">Save Worker</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
