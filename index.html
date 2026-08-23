@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>CTD Worker Hajeri</title>
-
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -37,7 +35,7 @@
 
   <section class="card toolbar">
 
-    <div class="date-box">
+    <div class="date-box" id="dateBox">
 
       <label>Date</label>
 
@@ -60,16 +58,14 @@
         <input
           type="text"
           id="searchInput"
-          list="workerList"
           placeholder="Select or search worker name"
           autocomplete="off"
         >
 
-        <datalist id="workerList"></datalist>
-
         <button
           id="showAllBtn"
           class="secondary"
+          type="button"
         >
           Show All
         </button>
@@ -82,6 +78,7 @@
     <button
       id="addWorkerBtn"
       class="primary add-btn"
+      type="button"
     >
       + Add Worker
     </button>
@@ -89,7 +86,7 @@
   </section>
 
 
-  <!-- SUBMITTED DATES -->
+  <!-- ATTENDANCE DATES -->
 
   <section class="card submitted-card">
 
@@ -97,7 +94,10 @@
 
       <div>
         <h2>Attendance Dates</h2>
-        <p>Green dates = attendance submitted</p>
+
+        <p id="attendanceDateHelp">
+          Select a worker to see his attendance dates
+        </p>
       </div>
 
     </div>
@@ -145,13 +145,13 @@
 
       <div>
         <h2>Daily Hajeri</h2>
-
         <p id="selectedDateLabel"></p>
       </div>
 
       <button
         id="allPresentBtn"
         class="secondary"
+        type="button"
       >
         Mark All Present
       </button>
@@ -195,7 +195,7 @@
   </section>
 
 
-  <!-- MONTHLY SUMMARY -->
+  <!-- MONTHLY SALARY SUMMARY -->
 
   <section class="card">
 
@@ -264,6 +264,7 @@
       <button
         id="closeModal"
         class="close"
+        type="button"
       >
         ×
       </button>
@@ -330,6 +331,7 @@
       <button
         id="cancelBtn"
         class="secondary"
+        type="button"
       >
         Cancel
       </button>
@@ -337,6 +339,7 @@
       <button
         id="saveWorkerBtn"
         class="primary"
+        type="button"
       >
         Save Worker
       </button>
