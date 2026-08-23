@@ -1,13 +1,11 @@
-const KEY = "ctd_worker_hajeri_final";
-
-const OLD_KEY = "ctd_worker_hajeri_v3";
+const KEY = "ctd_worker_hajeri_v4";
 
 const defaultData = {
   workers: [
     {
       id: crypto.randomUUID(),
       name: "ARMAN",
-      rate: 0,
+      rate: 500,
       otRate: 0,
       phone: ""
     }
@@ -15,93 +13,46 @@ const defaultData = {
   attendance: {}
 };
 
-
 let data = loadData();
 
+const dateInput = document.getElementById("dateInput");
+const searchInput = document.getElementById("searchInput");
+const workerTable = document.getElementById("workerTable");
+const monthlyTable = document.getElementById("monthlyTable");
+const modal = document.getElementById("modal");
 
-const dateInput =
-  document.getElementById("dateInput");
-
-const workerSelect =
-  document.getElementById("workerSelect");
-
-const workerTable =
-  document.getElementById("workerTable");
-
-const monthlyTable =
-  document.getElementById("monthlyTable");
-
-const modal =
-  document.getElementById("modal");
-
-const workerName =
-  document.getElementById("workerName");
-
-const workerRate =
-  document.getElementById("workerRate");
-
-const workerOTRate =
-  document.getElementById("workerOTRate");
-
-const workerPhone =
-  document.getElementById("workerPhone");
-
-const editWorkerId =
-  document.getElementById("editWorkerId");
-
+const workerName = document.getElementById("workerName");
+const workerRate = document.getElementById("workerRate");
+const workerOTRate = document.getElementById("workerOTRate");
+const workerPhone = document.getElementById("workerPhone");
+const editWorkerId = document.getElementById("editWorkerId");
 
 dateInput.value = todayISO();
 
 
-/* =========================
-   LOAD DATA
-========================= */
+// ===============================
+// LOAD DATA
+// ===============================
 
 function loadData() {
 
   try {
 
-    let saved =
-      localStorage.getItem(KEY);
-
-    /*
-      If final version doesn't exist,
-      try old v3 data.
-    */
-
-    if (!saved) {
-
-      saved =
-        localStorage.getItem(OLD_KEY);
-
-    }
-
+    const saved = localStorage.getItem(KEY);
 
     if (saved) {
 
-      const parsed =
-        JSON.parse(saved);
-
+      const parsed = JSON.parse(saved);
 
       if (!parsed.workers) {
         parsed.workers = [];
       }
 
-
       if (!parsed.attendance) {
         parsed.attendance = {};
       }
 
-
       parsed.workers.forEach(w => {
-
-        if (!w.id) {
-          w.id = crypto.randomUUID();
-        }
-
-        if (w.rate === undefined) {
-          w.rate = 0;
-        }
 
         if (w.otRate === undefined) {
           w.otRate = 0;
@@ -113,19 +64,12 @@ function loadData() {
 
       });
 
-
       return parsed;
-
     }
-
 
     return defaultData;
 
-  }
-
-  catch (error) {
-
-    console.error(error);
+  } catch (e) {
 
     return defaultData;
 
@@ -134,9 +78,9 @@ function loadData() {
 }
 
 
-/* =========================
-   SAVE
-========================= */
+// ===============================
+// SAVE DATA
+// ===============================
 
 function saveData() {
 
@@ -148,17 +92,16 @@ function saveData() {
 }
 
 
-/* =========================
-   TODAY
-========================= */
+// ===============================
+// TODAY
+// ===============================
 
 function todayISO() {
 
   const d = new Date();
 
   return new Date(
-    d.getTime()
-    -
+    d.getTime() -
     d.getTimezoneOffset() * 60000
   )
     .toISOString()
@@ -167,87 +110,22 @@ function todayISO() {
 }
 
 
-/* =========================
-   SELECTED DATE
-========================= */
+// ===============================
+// SELECTED DATE
+// ===============================
 
 function selectedDate() {
 
-  return (
-    dateInput.value ||
-    todayISO()
-  );
+  return dateInput.value || todayISO();
 
 }
 
 
-/* =========================
-   GET SAVED ATTENDANCE
-========================= */
+// ===============================
+// GET ATTENDANCE
+// ===============================
 
-function getSavedAttendance(
-  workerId,
-  date
-) {
-
-  if (
-    data.attendance[date] &&
-    data.attendance[date][workerId]
-  ) {
-
-    const a =
-      data.attendance[date][workerId];
-
-
-    return {
-
-      status:
-        a.status || "Present",
-
-      otHours:
-        Number(a.otHours || 0),
-
-      advance:
-        Number(a.advance || 0),
-
-      payment:
-        a.payment || "Pending"
-
-    };
-
-  }
-
-
-  /*
-    IMPORTANT:
-    New date is NOT automatically saved
-    as Present.
-  */
-
-  return {
-
-    status: "",
-
-    otHours: 0,
-
-    advance: 0,
-
-    payment: "Pending"
-
-  };
-
-}
-
-
-/* =========================
-   SAVE ATTENDANCE
-========================= */
-
-function setAttendance(
-  workerId,
-  values,
-  date = selectedDate()
-) {
+function getAttendance(workerId, date) {
 
   if (!data.attendance[date]) {
 
@@ -255,142 +133,79 @@ function setAttendance(
 
   }
 
+  if (!data.attendance[date][workerId]) {
 
-  const old =
-    getSavedAttendance(
-      workerId,
-      date
-    );
+    data.attendance[date][workerId] = {
 
+      status: "Present",
 
-  data.attendance[date][workerId] = {
+      otHours: 0,
 
-    ...old,
+      advance: 0,
 
-    ...values
+      payment: "Pending",
 
-  };
+      submitted: false
 
-
-  saveData();
-
-  render();
-
-}
-
-
-/* =========================
-   WORKER LIST
-========================= */
-
-function renderWorkerSelect() {
-
-  const oldValue =
-    workerSelect.value;
-
-
-  workerSelect.innerHTML = "";
-
-
-  const allOption =
-    document.createElement("option");
-
-  allOption.value = "";
-
-  allOption.textContent =
-    "All Workers";
-
-  workerSelect.appendChild(
-    allOption
-  );
-
-
-  const sortedWorkers =
-    [...data.workers].sort(
-      (a, b) =>
-        a.name.localeCompare(
-          b.name
-        )
-    );
-
-
-  sortedWorkers.forEach(
-    worker => {
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-      option.value =
-        worker.id;
-
-      option.textContent =
-        worker.name;
-
-      workerSelect.appendChild(
-        option
-      );
-
-    }
-  );
-
-
-  if (
-    oldValue &&
-    data.workers.some(
-      w => w.id === oldValue
-    )
-  ) {
-
-    workerSelect.value =
-      oldValue;
+    };
 
   }
 
+  const a =
+    data.attendance[date][workerId];
+
+  if (a.submitted === undefined) {
+    a.submitted = false;
+  }
+
+  if (a.otHours === undefined) {
+    a.otHours = 0;
+  }
+
+  if (a.advance === undefined) {
+    a.advance = 0;
+  }
+
+  if (!a.payment) {
+    a.payment = "Pending";
+  }
+
+  return a;
+
 }
 
 
-/* =========================
-   FILTER WORKERS
-========================= */
+// ===============================
+// SEARCH WORKERS
+// ===============================
 
 function filteredWorkers() {
 
-  const id =
-    workerSelect.value;
+  const q =
+    searchInput.value
+      .trim()
+      .toLowerCase();
 
-
-  if (!id) {
-
-    return data.workers;
-
-  }
-
-
-  return data.workers.filter(
-    w => w.id === id
+  return data.workers.filter(w =>
+    w.name
+      .toLowerCase()
+      .includes(q)
   );
 
 }
 
 
-/* =========================
-   RENDER
-========================= */
+// ===============================
+// RENDER
+// ===============================
 
 function render() {
-
-  renderWorkerSelect();
-
 
   const workers =
     filteredWorkers();
 
-
   const date =
     selectedDate();
-
 
   document.getElementById(
     "selectedDateLabel"
@@ -399,44 +214,32 @@ function render() {
 
 
   let present = 0;
-
   let absent = 0;
-
   let half = 0;
 
 
-  data.workers.forEach(
-    worker => {
+  data.workers.forEach(w => {
 
-      const a =
-        getSavedAttendance(
-          worker.id,
-          date
-        );
+    const a =
+      getAttendance(w.id, date);
 
+    if (a.submitted) {
 
       if (a.status === "Present") {
-
         present++;
-
       }
-
 
       if (a.status === "Absent") {
-
         absent++;
-
       }
 
-
       if (a.status === "Half Day") {
-
         half++;
-
       }
 
     }
-  );
+
+  });
 
 
   document.getElementById(
@@ -444,18 +247,15 @@ function render() {
   ).textContent =
     data.workers.length;
 
-
   document.getElementById(
     "presentCount"
   ).textContent =
     present;
 
-
   document.getElementById(
     "absentCount"
   ).textContent =
     absent;
-
 
   document.getElementById(
     "halfCount"
@@ -463,166 +263,160 @@ function render() {
     half;
 
 
+  // ===============================
+  // DAILY TABLE
+  // ===============================
+
   workerTable.innerHTML =
-    workers.map(
-      (worker, index) => {
+    workers.map((w, i) => {
 
-        const a =
-          getSavedAttendance(
-            worker.id,
-            date
-          );
+      const a =
+        getAttendance(
+          w.id,
+          date
+        );
 
+      const locked =
+        a.submitted;
 
-        return `
+      return `
 
-          <tr>
+      <tr>
 
-            <td>
-              ${index + 1}
-            </td>
-
-
-            <td>
-              <strong>
-                ${esc(worker.name)}
-              </strong>
-            </td>
+        <td>
+          ${i + 1}
+        </td>
 
 
-            <td>
-              ₹${Number(
-                worker.rate || 0
-              ).toLocaleString("en-IN")}
-            </td>
+        <td>
+          <strong>
+            ${esc(w.name)}
+          </strong>
+        </td>
 
 
-            <td>
-
-              <select
-                onchange="
-                  changeStatus(
-                    '${worker.id}',
-                    this.value
-                  )
-                "
-              >
-
-                <option
-                  value=""
-                  ${a.status === ""
-                    ? "selected"
-                    : ""}
-                >
-                  Select
-                </option>
+        <td>
+          ₹${Number(
+            w.rate || 0
+          ).toLocaleString("en-IN")}
+        </td>
 
 
-                <option
-                  value="Present"
-                  ${a.status === "Present"
-                    ? "selected"
-                    : ""}
-                >
-                  Present
-                </option>
+        <td>
+
+          <select
+            class="status-select"
+            id="status-${w.id}"
+            ${locked ? "disabled" : ""}
+          >
+
+            <option value="Present"
+              ${a.status === "Present"
+                ? "selected"
+                : ""}>
+              Present
+            </option>
+
+            <option value="Absent"
+              ${a.status === "Absent"
+                ? "selected"
+                : ""}>
+              Absent
+            </option>
+
+            <option value="Half Day"
+              ${a.status === "Half Day"
+                ? "selected"
+                : ""}>
+              Half Day
+            </option>
+
+          </select>
+
+        </td>
 
 
-                <option
-                  value="Absent"
-                  ${a.status === "Absent"
-                    ? "selected"
-                    : ""}
-                >
-                  Absent
-                </option>
+        <td>
+
+          <input
+            class="small-input"
+            id="ot-${w.id}"
+            type="number"
+            min="0"
+            step="0.5"
+            value="${a.otHours || 0}"
+            ${locked ? "disabled" : ""}
+          >
+
+        </td>
 
 
-                <option
-                  value="Half Day"
-                  ${a.status === "Half Day"
-                    ? "selected"
-                    : ""}
-                >
-                  Half Day
-                </option>
+        <td>
 
-              </select>
+          <input
+            class="small-input"
+            id="advance-${w.id}"
+            type="number"
+            min="0"
+            step="1"
+            value="${a.advance || 0}"
+            ${locked ? "disabled" : ""}
+          >
 
-            </td>
-
-
-            <td>
-
-              <input
-                class="small-input"
-                type="number"
-                min="0"
-                step="0.5"
-                value="${a.otHours}"
-                onchange="
-                  changeOT(
-                    '${worker.id}',
-                    this.value
-                  )
-                "
-              >
-
-            </td>
+        </td>
 
 
-            <td>
+        <td class="actions">
 
-              <input
-                class="small-input"
-                type="number"
-                min="0"
-                step="1"
-                value="${a.advance}"
-                onchange="
-                  changeAdvance(
-                    '${worker.id}',
-                    this.value
-                  )
-                "
-              >
+          ${
+            locked
 
-            </td>
+            ?
 
-
-            <td class="actions">
-
+            `
               <button
                 class="edit"
-                onclick="
-                  openEdit(
-                    '${worker.id}'
-                  )
-                "
+                onclick="editAttendance('${w.id}')"
               >
                 Edit
               </button>
+            `
 
+            :
 
+            `
               <button
-                class="danger"
-                onclick="
-                  deleteWorker(
-                    '${worker.id}'
-                  )
-                "
+                class="primary submit-btn"
+                onclick="submitAttendance('${w.id}')"
               >
-                Delete
+                Submit
               </button>
+            `
+          }
 
-            </td>
 
-          </tr>
+          <button
+            class="edit"
+            onclick="openEdit('${w.id}')"
+          >
+            Edit Worker
+          </button>
 
-        `;
 
-      }
-    ).join("");
+          <button
+            class="danger"
+            onclick="deleteWorker('${w.id}')"
+          >
+            Delete
+          </button>
+
+        </td>
+
+      </tr>
+
+      `;
+
+    }).join("");
 
 
   document.getElementById(
@@ -638,16 +432,101 @@ function render() {
 }
 
 
-/* =========================
-   MONTHLY SUMMARY
-========================= */
+// ===============================
+// SUBMIT ATTENDANCE
+// ===============================
+
+window.submitAttendance =
+function(id) {
+
+  const date =
+    selectedDate();
+
+  const statusElement =
+    document.getElementById(
+      `status-${id}`
+    );
+
+  const otElement =
+    document.getElementById(
+      `ot-${id}`
+    );
+
+  const advanceElement =
+    document.getElementById(
+      `advance-${id}`
+    );
+
+
+  if (!statusElement) {
+    return;
+  }
+
+
+  const a =
+    getAttendance(
+      id,
+      date
+    );
+
+
+  a.status =
+    statusElement.value;
+
+  a.otHours =
+    Number(
+      otElement.value || 0
+    );
+
+  a.advance =
+    Number(
+      advanceElement.value || 0
+    );
+
+  a.submitted =
+    true;
+
+
+  saveData();
+
+  render();
+
+};
+
+
+// ===============================
+// EDIT ATTENDANCE
+// ===============================
+
+window.editAttendance =
+function(id) {
+
+  const date =
+    selectedDate();
+
+  const a =
+    getAttendance(
+      id,
+      date
+    );
+
+  a.submitted =
+    false;
+
+  saveData();
+
+  render();
+
+};
+
+
+// ===============================
+// MONTHLY SUMMARY
+// ===============================
 
 function renderMonthly() {
 
-  const [
-    year,
-    month
-  ] =
+  const [year, month] =
     selectedDate()
       .split("-")
       .map(Number);
@@ -661,87 +540,39 @@ function renderMonthly() {
     ).getDate();
 
 
-  const today =
-    todayISO();
-
-
-  const currentYear =
-    Number(today.split("-")[0]);
-
-
-  const currentMonth =
-    Number(today.split("-")[1]);
-
-
-  const selectedYear =
-    year;
-
-
-  const selectedMonth =
-    month;
-
-
   monthlyTable.innerHTML =
-    data.workers.map(
-      worker => {
+    data.workers.map(w => {
 
-        let present = 0;
+      let present = 0;
+      let half = 0;
+      let absent = 0;
 
-        let half = 0;
-
-        let absent = 0;
-
-        let otHours = 0;
-
-        let advance = 0;
-
-        let paid =
-          false;
+      let otHours = 0;
+      let advance = 0;
 
 
-        for (
-          let day = 1;
-          day <= daysInMonth;
-          day++
-        ) {
+      for (
+        let d = 1;
+        d <= daysInMonth;
+        d++
+      ) {
 
-          const iso =
-            `${year}-${String(
-              month
-            ).padStart(
-              2,
-              "0"
-            )}-${String(
-              day
-            ).padStart(
-              2,
-              "0"
-            )}`;
+        const iso =
+          `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 
-          /*
-            Future dates are ignored.
-          */
+        const a =
+          getAttendance(
+            w.id,
+            iso
+          );
+
+
+        // Only submitted attendance
+        if (a.submitted) {
 
           if (
-            iso > today
-          ) {
-
-            continue;
-
-          }
-
-
-          const a =
-            getSavedAttendance(
-              worker.id,
-              iso
-            );
-
-
-          if (
-            a.status ===
-            "Present"
+            a.status === "Present"
           ) {
 
             present++;
@@ -749,8 +580,7 @@ function renderMonthly() {
           }
 
           else if (
-            a.status ===
-            "Half Day"
+            a.status === "Half Day"
           ) {
 
             half++;
@@ -758,8 +588,7 @@ function renderMonthly() {
           }
 
           else if (
-            a.status ===
-            "Absent"
+            a.status === "Absent"
           ) {
 
             absent++;
@@ -772,170 +601,142 @@ function renderMonthly() {
               a.otHours || 0
             );
 
-
           advance +=
             Number(
               a.advance || 0
             );
 
-
-          if (
-            a.payment === "Paid"
-          ) {
-
-            paid = true;
-
-          }
-
         }
 
-
-        const payableDays =
-          present +
-          (half * 0.5);
-
-
-        const dailyRate =
-          Number(
-            worker.rate || 0
-          );
-
-
-        const otRate =
-          Number(
-            worker.otRate || 0
-          );
-
-
-        const grossSalary =
-          payableDays *
-          dailyRate;
-
-
-        const overtimeAmount =
-          otHours *
-          otRate;
-
-
-        const totalSalary =
-          grossSalary +
-          overtimeAmount;
-
-
-        const netSalary =
-          Math.max(
-            0,
-            totalSalary -
-            advance
-          );
-
-
-        return `
-
-          <tr>
-
-            <td>
-              <strong>
-                ${esc(worker.name)}
-              </strong>
-            </td>
-
-
-            <td>
-              ${present}
-            </td>
-
-
-            <td>
-              ${half}
-            </td>
-
-
-            <td>
-              ${absent}
-            </td>
-
-
-            <td>
-              ${otHours}
-            </td>
-
-
-            <td>
-              ${payableDays}
-            </td>
-
-
-            <td>
-              ₹${grossSalary.toLocaleString(
-                "en-IN"
-              )}
-            </td>
-
-
-            <td>
-              ₹${advance.toLocaleString(
-                "en-IN"
-              )}
-            </td>
-
-
-            <td>
-              <strong>
-                ₹${netSalary.toLocaleString(
-                  "en-IN"
-                )}
-              </strong>
-            </td>
-
-
-            <td>
-
-              <select
-                onchange="
-                  changeMonthlyPayment(
-                    '${worker.id}',
-                    this.value
-                  )
-                "
-              >
-
-                <option
-                  value="Pending"
-                  ${!paid
-                    ? "selected"
-                    : ""}
-                >
-                  Pending
-                </option>
-
-
-                <option
-                  value="Paid"
-                  ${paid
-                    ? "selected"
-                    : ""}
-                >
-                  Paid
-                </option>
-
-              </select>
-
-            </td>
-
-          </tr>
-
-        `;
-
       }
-    ).join("");
+
+
+      const payableDays =
+        present +
+        (half * 0.5);
+
+
+      const grossSalary =
+        payableDays *
+        Number(
+          w.rate || 0
+        );
+
+
+      const overtimeAmount =
+        otHours *
+        Number(
+          w.otRate || 0
+        );
+
+
+      const totalSalary =
+        grossSalary +
+        overtimeAmount;
+
+
+      const netSalary =
+        Math.max(
+          0,
+          totalSalary -
+          advance
+        );
+
+
+      return `
+
+      <tr>
+
+        <td>
+          <strong>
+            ${esc(w.name)}
+          </strong>
+        </td>
+
+
+        <td>
+          ${present}
+        </td>
+
+
+        <td>
+          ${half}
+        </td>
+
+
+        <td>
+          ${absent}
+        </td>
+
+
+        <td>
+          ${otHours}
+        </td>
+
+
+        <td>
+          ${payableDays}
+        </td>
+
+
+        <td>
+          ₹${grossSalary.toLocaleString(
+            "en-IN"
+          )}
+        </td>
+
+
+        <td>
+          ₹${advance.toLocaleString(
+            "en-IN"
+          )}
+        </td>
+
+
+        <td>
+          <strong>
+            ₹${netSalary.toLocaleString(
+              "en-IN"
+            )}
+          </strong>
+        </td>
+
+
+        <td>
+
+          <select
+            onchange="
+              changeMonthlyPayment(
+                '${w.id}',
+                this.value
+              )
+            "
+          >
+
+            <option value="Pending">
+              Pending
+            </option>
+
+            <option value="Paid">
+              Paid
+            </option>
+
+          </select>
+
+        </td>
+
+      </tr>
+
+      `;
+
+    }).join("");
 
 }
 
 
-/* =========================
-   DATE FORMAT
-========================= */
+// ===============================
+// DATE FORMAT
+// ===============================
 
 function formatDate(iso) {
 
@@ -946,111 +747,48 @@ function formatDate(iso) {
   ] =
     iso.split("-");
 
-
   return `${d}-${m}-${y}`;
 
 }
 
 
-/* =========================
-   HTML ESCAPE
-========================= */
+// ===============================
+// ESCAPE HTML
+// ===============================
 
-function esc(value) {
+function esc(s) {
 
-  return String(value)
-    .replace(
-      /[&<>"']/g,
-      char => ({
+  return String(s).replace(
+    /[&<>"']/g,
+    c => ({
 
-        "&": "&amp;",
+      "&":
+        "&amp;",
 
-        "<": "&lt;",
+      "<":
+        "&lt;",
 
-        ">": "&gt;",
+      ">":
+        "&gt;",
 
-        '"': "&quot;",
+      '"':
+        "&quot;",
 
-        "'": "&#39;"
+      "'":
+        "&#39;"
 
-      }[char])
-    );
+    }[c])
+  );
 
 }
 
 
-/* =========================
-   STATUS
-========================= */
-
-window.changeStatus =
-function(
-  id,
-  status
-) {
-
-  setAttendance(
-    id,
-    {
-      status:
-        status
-    }
-  );
-
-};
-
-
-/* =========================
-   OT
-========================= */
-
-window.changeOT =
-function(
-  id,
-  value
-) {
-
-  setAttendance(
-    id,
-    {
-      otHours:
-        Number(value || 0)
-    }
-  );
-
-};
-
-
-/* =========================
-   ADVANCE
-========================= */
-
-window.changeAdvance =
-function(
-  id,
-  value
-) {
-
-  setAttendance(
-    id,
-    {
-      advance:
-        Number(value || 0)
-    }
-  );
-
-};
-
-
-/* =========================
-   PAYMENT
-========================= */
+// ===============================
+// MONTHLY PAYMENT
+// ===============================
 
 window.changeMonthlyPayment =
-function(
-  id,
-  value
-) {
+function(id, value) {
 
   const [
     year,
@@ -1059,10 +797,6 @@ function(
     selectedDate()
       .split("-")
       .map(Number);
-
-
-  const today =
-    todayISO();
 
 
   const days =
@@ -1074,67 +808,25 @@ function(
 
 
   for (
-    let day = 1;
-    day <= days;
-    day++
+    let d = 1;
+    d <= days;
+    d++
   ) {
 
     const iso =
-      `${year}-${String(
-        month
-      ).padStart(
-        2,
-        "0"
-      )}-${String(
-        day
-      ).padStart(
-        2,
-        "0"
-      )}`;
+      `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 
-    if (
-      iso > today
-    ) {
-
-      continue;
-
-    }
-
-
-    if (
-      !data.attendance[iso]
-    ) {
-
-      data.attendance[iso] =
-        {};
-
-    }
-
-
-    if (
-      !data.attendance[iso][id]
-    ) {
-
-      data.attendance[iso][id] = {
-
-        status: "",
-
-        otHours: 0,
-
-        advance: 0,
-
-        payment: value
-
-      };
-
-    }
-
-    else {
-
-      data.attendance[
+    const a =
+      getAttendance(
+        id,
         iso
-      ][id].payment =
+      );
+
+
+    if (a.submitted) {
+
+      a.payment =
         value;
 
     }
@@ -1149,20 +841,20 @@ function(
 };
 
 
-/* =========================
-   OPEN EDIT
-========================= */
+// ===============================
+// EDIT WORKER
+// ===============================
 
 window.openEdit =
 function(id) {
 
-  const worker =
+  const w =
     data.workers.find(
-      w => w.id === id
+      x => x.id === id
     );
 
 
-  if (!worker) {
+  if (!w) {
     return;
   }
 
@@ -1174,23 +866,23 @@ function(id) {
 
 
   editWorkerId.value =
-    worker.id;
+    w.id;
 
 
   workerName.value =
-    worker.name;
+    w.name;
 
 
   workerRate.value =
-    worker.rate || "";
+    w.rate || "";
 
 
   workerOTRate.value =
-    worker.otRate || "";
+    w.otRate || "";
 
 
   workerPhone.value =
-    worker.phone || "";
+    w.phone || "";
 
 
   modal.classList.remove(
@@ -1203,27 +895,27 @@ function(id) {
 };
 
 
-/* =========================
-   DELETE
-========================= */
+// ===============================
+// DELETE WORKER
+// ===============================
 
 window.deleteWorker =
 function(id) {
 
-  const worker =
+  const w =
     data.workers.find(
-      w => w.id === id
+      x => x.id === id
     );
 
 
-  if (!worker) {
+  if (!w) {
     return;
   }
 
 
   if (
     !confirm(
-      `Delete worker "${worker.name}"?`
+      `Delete worker "${w.name}"?`
     )
   ) {
 
@@ -1234,25 +926,19 @@ function(id) {
 
   data.workers =
     data.workers.filter(
-      w => w.id !== id
+      x => x.id !== id
     );
 
 
   Object.keys(
     data.attendance
-  ).forEach(
-    date => {
+  ).forEach(date => {
 
-      delete data.attendance[
-        date
-      ][id];
+    delete data.attendance[
+      date
+    ][id];
 
-    }
-  );
-
-
-  workerSelect.value =
-    "";
+  });
 
 
   saveData();
@@ -1262,9 +948,9 @@ function(id) {
 };
 
 
-/* =========================
-   ADD WORKER BUTTON
-========================= */
+// ===============================
+// ADD WORKER
+// ===============================
 
 document.getElementById(
   "addWorkerBtn"
@@ -1307,9 +993,9 @@ function() {
 };
 
 
-/* =========================
-   CLOSE MODAL
-========================= */
+// ===============================
+// CLOSE MODAL
+// ===============================
 
 function closeModal() {
 
@@ -1334,10 +1020,10 @@ closeModal;
 
 modal.addEventListener(
   "click",
-  function(event) {
+  e => {
 
     if (
-      event.target === modal
+      e.target === modal
     ) {
 
       closeModal();
@@ -1348,9 +1034,9 @@ modal.addEventListener(
 );
 
 
-/* =========================
-   SAVE WORKER
-========================= */
+// ===============================
+// SAVE WORKER
+// ===============================
 
 document.getElementById(
   "saveWorkerBtn"
@@ -1380,28 +1066,28 @@ function() {
 
   if (id) {
 
-    const worker =
+    const w =
       data.workers.find(
-        w => w.id === id
+        x => x.id === id
       );
 
 
-    if (worker) {
+    if (w) {
 
-      worker.name =
+      w.name =
         name;
 
-      worker.rate =
+      w.rate =
         Number(
           workerRate.value || 0
         );
 
-      worker.otRate =
+      w.otRate =
         Number(
           workerOTRate.value || 0
         );
 
-      worker.phone =
+      w.phone =
         workerPhone.value.trim();
 
     }
@@ -1445,9 +1131,9 @@ function() {
 };
 
 
-/* =========================
-   MARK ALL PRESENT
-========================= */
+// ===============================
+// MARK ALL PRESENT
+// ===============================
 
 document.getElementById(
   "allPresentBtn"
@@ -1457,9 +1143,7 @@ function() {
   if (
     !data.workers.length
   ) {
-
     return;
-
   }
 
 
@@ -1467,36 +1151,23 @@ function() {
     selectedDate();
 
 
-  if (
-    !data.attendance[date]
-  ) {
-
-    data.attendance[date] =
-      {};
-
-  }
-
-
   data.workers.forEach(
-    worker => {
+    w => {
 
-      const old =
-        getSavedAttendance(
-          worker.id,
+      const a =
+        getAttendance(
+          w.id,
           date
         );
 
 
-      data.attendance[
-        date
-      ][worker.id] = {
+      // Do not change already submitted
+      if (!a.submitted) {
 
-        ...old,
+        a.status =
+          "Present";
 
-        status:
-          "Present"
-
-      };
+      }
 
     }
   );
@@ -1509,33 +1180,21 @@ function() {
 };
 
 
-/* =========================
-   DATE CHANGE
-========================= */
+// ===============================
+// DATE / SEARCH
+// ===============================
 
 dateInput.onchange =
-function() {
-
-  render();
-
-};
+render;
 
 
-/* =========================
-   WORKER SELECT CHANGE
-========================= */
-
-workerSelect.onchange =
-function() {
-
-  render();
-
-};
+searchInput.oninput =
+render;
 
 
-/* =========================
-   PRINT
-========================= */
+// ===============================
+// PRINT
+// ===============================
 
 document.getElementById(
   "printBtn"
@@ -1547,9 +1206,9 @@ function() {
 };
 
 
-/* =========================
-   CSV EXPORT
-========================= */
+// ===============================
+// EXPORT CSV
+// ===============================
 
 document.getElementById(
   "exportBtn"
@@ -1559,20 +1218,14 @@ function() {
   const rows = [[
 
     "Date",
-
     "Worker Name",
-
     "Daily Rate",
-
     "Status",
-
     "OT Hours",
-
     "Advance",
-
     "OT Rate",
-
-    "OT Amount"
+    "OT Amount",
+    "Submitted"
 
   ]];
 
@@ -1587,11 +1240,11 @@ function() {
     date => {
 
       data.workers.forEach(
-        worker => {
+        w => {
 
           const a =
-            getSavedAttendance(
-              worker.id,
+            getAttendance(
+              w.id,
               date
             );
 
@@ -1600,9 +1253,9 @@ function() {
 
             date,
 
-            worker.name,
+            w.name,
 
-            worker.rate,
+            w.rate,
 
             a.status,
 
@@ -1610,15 +1263,18 @@ function() {
 
             a.advance,
 
-            worker.otRate,
+            w.otRate,
 
             Number(
               a.otHours || 0
-            )
-            *
+            ) *
             Number(
-              worker.otRate || 0
-            )
+              w.otRate || 0
+            ),
+
+            a.submitted
+              ? "Yes"
+              : "No"
 
           ]);
 
@@ -1630,22 +1286,17 @@ function() {
 
 
   const csv =
-    rows
-      .map(
-        row =>
-          row
-            .map(
-              value =>
-                `"${String(
-                  value
-                ).replaceAll(
-                  '"',
-                  '""'
-                )}"`
-            )
-            .join(",")
-      )
-      .join("\n");
+    rows.map(
+      row =>
+        row.map(
+          value =>
+            `"${String(value)
+              .replaceAll(
+                '"',
+                '""'
+              )}"`
+        ).join(",")
+    ).join("\n");
 
 
   const blob =
@@ -1658,29 +1309,29 @@ function() {
     );
 
 
-  const link =
+  const a =
     document.createElement(
       "a"
     );
 
 
-  link.href =
+  a.href =
     URL.createObjectURL(
       blob
     );
 
 
-  link.download =
+  a.download =
     "CTD-Worker-Hajeri.csv";
 
 
-  link.click();
+  a.click();
 
 };
 
 
-/* =========================
-   START
-========================= */
+// ===============================
+// START
+// ===============================
 
 render();
