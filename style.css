@@ -62,6 +62,10 @@ body {
   flex: 1;
 }
 
+.worker-search {
+  position: relative;
+}
+
 label {
   display: block;
   font-size: 14px;
@@ -120,6 +124,129 @@ button:hover {
   white-space: nowrap;
 }
 
+
+/* =========================
+   CUSTOM WORKER DROPDOWN
+========================= */
+
+.worker-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 5px);
+  background: white;
+  border: 1px solid #ccd2da;
+  border-radius: 9px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  z-index: 5000;
+  max-height: 250px;
+  overflow-y: auto;
+  display: none;
+}
+
+.worker-dropdown.show {
+  display: block;
+}
+
+.worker-option {
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #eeeeee;
+  font-weight: 600;
+}
+
+.worker-option:last-child {
+  border-bottom: none;
+}
+
+.worker-option:hover {
+  background: #f1f7ff;
+}
+
+.worker-option.no-worker {
+  color: #777;
+  text-align: center;
+  cursor: default;
+}
+
+
+/* =========================
+   DATE
+========================= */
+
+.date-status {
+  margin-top: 6px;
+  min-height: 18px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.date-status.submitted {
+  color: #15803d;
+}
+
+.date-status.not-submitted {
+  color: #777;
+}
+
+.date-box.submitted-date input {
+  border: 2px solid #16a34a;
+  background: #f0fdf4;
+}
+
+
+/* =========================
+   ATTENDANCE DATES
+========================= */
+
+.submitted-card {
+  padding: 15px 20px;
+}
+
+.submitted-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 35px;
+}
+
+.date-chip {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+  border-radius: 20px;
+  padding: 8px 13px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.date-chip:hover {
+  background: #bbf7d0;
+}
+
+.date-chip.active {
+  background: #16a34a;
+  color: white;
+  border-color: #15803d;
+  box-shadow: 0 0 0 2px rgba(22,163,74,0.18);
+}
+
+.date-chip.present-date::before {
+  content: "✓ ";
+}
+
+.no-dates {
+  color: #888;
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+
+/* =========================
+   STATS
+========================= */
+
 .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -145,6 +272,11 @@ button:hover {
   color: #666;
 }
 
+
+/* =========================
+   SECTION
+========================= */
+
 .section-title {
   display: flex;
   justify-content: space-between;
@@ -163,6 +295,11 @@ button:hover {
   color: #777;
   font-size: 13px;
 }
+
+
+/* =========================
+   TABLE
+========================= */
 
 .table-wrap {
   width: 100%;
@@ -217,14 +354,12 @@ tr:hover td {
   color: white;
 }
 
-.submitted-btn {
-  background: #16a34a;
-  color: white;
+.status-select {
+  min-width: 120px;
 }
 
-.edit-attendance {
-  background: #e5a619;
-  color: white;
+.payment-select {
+  min-width: 100px;
 }
 
 .empty {
@@ -234,60 +369,10 @@ tr:hover td {
   display: none;
 }
 
-.date-status {
-  margin-top: 6px;
-  min-height: 18px;
-  font-size: 12px;
-  font-weight: 700;
-}
 
-.date-status.submitted {
-  color: #15803d;
-}
-
-.date-status.not-submitted {
-  color: #777;
-}
-
-.date-box.submitted-date input {
-  border: 2px solid #16a34a;
-  background: #f0fdf4;
-}
-
-.submitted-card {
-  padding: 15px 20px;
-}
-
-.submitted-dates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.date-chip {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
-  border-radius: 20px;
-  padding: 7px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.date-chip:hover {
-  background: #bbf7d0;
-}
-
-.date-chip.active {
-  background: #16a34a;
-  color: white;
-}
-
-.no-dates {
-  color: #888;
-  font-size: 13px;
-}
+/* =========================
+   MODAL
+========================= */
 
 .modal {
   position: fixed;
@@ -339,13 +424,10 @@ tr:hover td {
   margin-top: 22px;
 }
 
-.status-select {
-  min-width: 120px;
-}
 
-.payment-select {
-  min-width: 100px;
-}
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 850px) {
 
@@ -368,6 +450,11 @@ tr:hover td {
   }
 
 }
+
+
+/* =========================
+   PRINT
+========================= */
 
 @media print {
 
