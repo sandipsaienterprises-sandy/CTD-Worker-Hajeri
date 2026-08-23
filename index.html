@@ -37,7 +37,8 @@
 
   <section class="card toolbar">
 
-    <div>
+    <div class="date-box">
+
       <label>Date</label>
 
       <input
@@ -46,37 +47,41 @@
       >
 
       <div id="dateStatus" class="date-status"></div>
+
     </div>
 
 
-    <div class="grow">
+    <div class="worker-search grow">
 
       <label>Search / Select Worker</label>
 
-      <input
-        id="searchInput"
-        list="workerList"
-        type="text"
-        placeholder="Select or search worker name"
-        autocomplete="off"
-      >
+      <div class="search-row">
 
-      <datalist id="workerList"></datalist>
+        <input
+          type="text"
+          id="searchInput"
+          list="workerList"
+          placeholder="Select or search worker name"
+          autocomplete="off"
+        >
+
+        <datalist id="workerList"></datalist>
+
+        <button
+          id="showAllBtn"
+          class="secondary"
+        >
+          Show All
+        </button>
+
+      </div>
 
     </div>
-
-
-    <button
-      id="showAllBtn"
-      class="secondary"
-    >
-      Show All
-    </button>
 
 
     <button
       id="addWorkerBtn"
-      class="primary"
+      class="primary add-btn"
     >
       + Add Worker
     </button>
@@ -86,16 +91,13 @@
 
   <!-- SUBMITTED DATES -->
 
-  <section class="card dates-card">
+  <section class="card submitted-card">
 
     <div class="section-title">
 
       <div>
         <h2>Attendance Dates</h2>
-
-        <p>
-          Green dates = Attendance Submitted
-        </p>
+        <p>Green dates = attendance submitted</p>
       </div>
 
     </div>
@@ -147,7 +149,6 @@
         <p id="selectedDateLabel"></p>
       </div>
 
-
       <button
         id="allPresentBtn"
         class="secondary"
@@ -165,27 +166,17 @@
         <thead>
 
           <tr>
-
             <th>#</th>
-
             <th>Worker Name</th>
-
             <th>Daily Rate</th>
-
             <th>Status</th>
-
             <th>OT Hours</th>
-
             <th>Advance ₹</th>
-
             <th>Attendance</th>
-
             <th>Actions</th>
-
           </tr>
 
         </thead>
-
 
         <tbody id="workerTable"></tbody>
 
@@ -211,13 +202,11 @@
     <div class="section-title">
 
       <div>
-
         <h2>Monthly Salary Summary</h2>
 
         <p>
-          Only submitted attendance is counted
+          Only submitted attendance is counted.
         </p>
-
       </div>
 
     </div>
@@ -232,29 +221,19 @@
           <tr>
 
             <th>Worker</th>
-
             <th>Present</th>
-
             <th>Half Day</th>
-
             <th>Absent</th>
-
             <th>OT Hours</th>
-
             <th>Payable Days</th>
-
             <th>Gross Salary</th>
-
             <th>Advance</th>
-
             <th>Net Salary</th>
-
             <th>Payment</th>
 
           </tr>
 
         </thead>
-
 
         <tbody id="monthlyTable"></tbody>
 
@@ -304,7 +283,7 @@
 
 
     <label>
-      Daily Rate (₹)
+      Daily Rate ₹
     </label>
 
     <input
@@ -312,12 +291,12 @@
       type="number"
       min="0"
       step="1"
-      placeholder="0"
+      placeholder="500"
     >
 
 
     <label>
-      OT Rate (₹ / hour)
+      OT Rate ₹ / Hour
     </label>
 
     <input
