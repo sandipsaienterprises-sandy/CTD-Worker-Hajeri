@@ -33,7 +33,7 @@
 
 <main class="container">
 
-  <!-- TOOLBAR -->
+  <!-- SEARCH / DATE -->
 
   <section class="card toolbar">
 
@@ -44,6 +44,8 @@
         type="date"
         id="dateInput"
       >
+
+      <div id="dateStatus" class="date-status"></div>
     </div>
 
 
@@ -51,28 +53,22 @@
 
       <label>Search / Select Worker</label>
 
-      <div class="worker-picker">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Select or search worker name"
+        autocomplete="off"
+      >
 
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Select or search worker name"
-          autocomplete="off"
-        >
-
-        <div
-          id="workerDropdown"
-          class="worker-dropdown hidden"
-        ></div>
-
-      </div>
+      <div id="workerSuggestions" class="worker-suggestions"></div>
 
     </div>
 
 
     <button
-      id="clearWorkerBtn"
+      id="showAllBtn"
       class="secondary"
+      type="button"
     >
       Show All
     </button>
@@ -81,9 +77,27 @@
     <button
       id="addWorkerBtn"
       class="primary"
+      type="button"
     >
       + Add Worker
     </button>
+
+  </section>
+
+
+  <!-- SAVED ATTENDANCE DATES -->
+
+  <section class="saved-dates-card">
+
+    <div class="saved-dates-title">
+      <strong>Hajeri Saved Dates</strong>
+
+      <span>
+        Green = Submitted
+      </span>
+    </div>
+
+    <div id="savedDates" class="saved-dates"></div>
 
   </section>
 
@@ -123,13 +137,13 @@
 
       <div>
         <h2>Daily Hajeri</h2>
-
         <p id="selectedDateLabel"></p>
       </div>
 
       <button
         id="allPresentBtn"
         class="secondary"
+        type="button"
       >
         Mark All Present
       </button>
@@ -173,20 +187,18 @@
   </section>
 
 
-  <!-- MONTHLY REPORT -->
+  <!-- MONTHLY SUMMARY -->
 
   <section class="card">
 
     <div class="section-title">
 
       <div>
-
         <h2>Monthly Salary Summary</h2>
 
         <p>
-          Only submitted attendance is counted.
+          Only submitted attendance is counted
         </p>
-
       </div>
 
     </div>
@@ -199,7 +211,6 @@
         <thead>
 
           <tr>
-
             <th>Worker</th>
             <th>Present</th>
             <th>Half Day</th>
@@ -210,7 +221,6 @@
             <th>Advance</th>
             <th>Net Salary</th>
             <th>Payment</th>
-
           </tr>
 
         </thead>
@@ -226,7 +236,7 @@
 </main>
 
 
-<!-- ADD / EDIT WORKER MODAL -->
+<!-- WORKER MODAL -->
 
 <div
   id="modal"
@@ -244,6 +254,7 @@
       <button
         id="closeModal"
         class="close"
+        type="button"
       >
         ×
       </button>
@@ -302,6 +313,7 @@
       <button
         id="cancelBtn"
         class="secondary"
+        type="button"
       >
         Cancel
       </button>
@@ -309,6 +321,7 @@
       <button
         id="saveWorkerBtn"
         class="primary"
+        type="button"
       >
         Save Worker
       </button>
