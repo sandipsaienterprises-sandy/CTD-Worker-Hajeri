@@ -1,11 +1,11 @@
-const KEY = "ctd_worker_hajeri_v3";
+const KEY = "ctd_worker_hajeri_v4";
 
 const defaultData = {
   workers: [
     {
       id: crypto.randomUUID(),
       name: "ARMAN",
-      rate: 0,
+      rate: 500,
       otRate: 0,
       phone: ""
     }
@@ -17,6 +17,7 @@ let data = loadData();
 
 const dateInput = document.getElementById("dateInput");
 const searchInput = document.getElementById("searchInput");
+const workerList = document.getElementById("workerList");
 const workerTable = document.getElementById("workerTable");
 const monthlyTable = document.getElementById("monthlyTable");
 const modal = document.getElementById("modal");
@@ -36,8 +37,18 @@ function loadData() {
     if (saved) {
       const parsed = JSON.parse(saved);
 
+      if (!parsed.workers) {
+        parsed.workers = [];
+      }
+
+      if (!parsed.attendance) {
+        parsed.attendance = {};
+      }
+
       parsed.workers.forEach(w => {
         if (w.otRate === undefined) w.otRate = 0;
+        if (w.phone === undefined) w.phone = "";
+        if (w.rate === undefined) w.rate = 0;
       });
 
       return parsed;
@@ -98,9 +109,12 @@ function setAttendance(workerId, values, date = selectedDate()) {
   };
 
   saveData();
-
   render();
 }
+
+/* =========================
+   WORKER SEARCH
+========================= */
 
 function filteredWorkers() {
 
@@ -108,12 +122,37 @@ function filteredWorkers() {
     .trim()
     .toLowerCase();
 
+  if (!q) {
+    return data.workers;
+  }
+
   return data.workers.filter(w =>
     w.name.toLowerCase().includes(q)
   );
 }
 
+/* =========================
+   WORKER DROPDOWN
+========================= */
+
+function renderWorkerList() {
+
+  if (!workerList) return;
+
+  workerList.innerHTML = data.workers
+    .map(w => `
+      <option value="${esc(w.name)}"></option>
+    `)
+    .join("");
+}
+
+/* =========================
+   MAIN RENDER
+========================= */
+
 function render() {
+
+  renderWorkerList();
 
   const workers = filteredWorkers();
 
@@ -131,11 +170,17 @@ function render() {
 
     const a = getAttendance(w.id, date);
 
-    if (a.status === "Present") present++;
+    if (a.status === "Present") {
+      present++;
+    }
 
-    if (a.status === "Absent") absent++;
+    if (a.status === "Absent") {
+      absent++;
+    }
 
-    if (a.status === "Half Day") half++;
+    if (a.status === "Half Day") {
+      half++;
+    }
 
   });
 
@@ -150,7 +195,6 @@ function render() {
 
   document.getElementById("halfCount").textContent =
     half;
-
 
   workerTable.innerHTML = workers.map((w, i) => {
 
@@ -250,6 +294,10 @@ function render() {
   renderMonthly();
 }
 
+/* =========================
+   MONTHLY SUMMARY
+========================= */
+
 function renderMonthly() {
 
   const [year, month] =
@@ -266,29 +314,45 @@ function renderMonthly() {
       let absent = 0;
       let otHours = 0;
       let advance = 0;
+      let payment = "Pending";
 
-      for (let d = 1; d <= daysInMonth; d++) {
+      for (
+        let d = 1;
+        d <= daysInMonth;
+        d++
+      ) {
 
         const iso =
           `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
-        const a = getAttendance(w.id, iso);
+        const a =
+          getAttendance(w.id, iso);
 
         if (a.status === "Present") {
+
           present++;
+
         }
 
         else if (a.status === "Half Day") {
+
           half++;
+
         }
 
         else {
+
           absent++;
+
         }
 
         otHours += Number(a.otHours || 0);
 
         advance += Number(a.advance || 0);
+
+        if (a.payment === "Paid") {
+          payment = "Paid";
+        }
 
       }
 
@@ -296,16 +360,22 @@ function renderMonthly() {
         present + (half * 0.5);
 
       const grossSalary =
-        payableDays * Number(w.rate || 0);
+        payableDays *
+        Number(w.rate || 0);
 
       const overtimeAmount =
-        otHours * Number(w.otRate || 0);
+        otHours *
+        Number(w.otRate || 0);
 
       const totalSalary =
-        grossSalary + overtimeAmount;
+        grossSalary +
+        overtimeAmount;
 
       const netSalary =
-        Math.max(0, totalSalary - advance);
+        Math.max(
+          0,
+          totalSalary - advance
+        );
 
       return `
 
@@ -345,11 +415,13 @@ function renderMonthly() {
               onchange="changeMonthlyPayment('${w.id}', this.value)"
             >
 
-              <option value="Pending">
+              <option value="Pending"
+                ${payment === "Pending" ? "selected" : ""}>
                 Pending
               </option>
 
-              <option value="Paid">
+              <option value="Paid"
+                ${payment === "Paid" ? "selected" : ""}>
                 Paid
               </option>
 
@@ -364,6 +436,10 @@ function renderMonthly() {
     }).join("");
 }
 
+/* =========================
+   DATE
+========================= */
+
 function formatDate(iso) {
 
   const [y, m, d] =
@@ -371,6 +447,10 @@ function formatDate(iso) {
 
   return `${d}-${m}-${y}`;
 }
+
+/* =========================
+   ESCAPE HTML
+========================= */
 
 function esc(s) {
 
@@ -387,7 +467,12 @@ function esc(s) {
 
 }
 
-window.changeStatus = function(id, status) {
+/* =========================
+   STATUS
+========================= */
+
+window.changeStatus =
+function(id, status) {
 
   setAttendance(id, {
     status: status
@@ -395,7 +480,12 @@ window.changeStatus = function(id, status) {
 
 };
 
-window.changeOT = function(id, value) {
+/* =========================
+   OT HOURS
+========================= */
+
+window.changeOT =
+function(id, value) {
 
   setAttendance(id, {
     otHours: Number(value || 0)
@@ -403,13 +493,22 @@ window.changeOT = function(id, value) {
 
 };
 
-window.changeAdvance = function(id, value) {
+/* =========================
+   ADVANCE
+========================= */
+
+window.changeAdvance =
+function(id, value) {
 
   setAttendance(id, {
     advance: Number(value || 0)
   });
 
 };
+
+/* =========================
+   PAYMENT
+========================= */
 
 window.changeMonthlyPayment =
 function(id, value) {
@@ -420,7 +519,11 @@ function(id, value) {
   const days =
     new Date(year, month, 0).getDate();
 
-  for (let d = 1; d <= days; d++) {
+  for (
+    let d = 1;
+    d <= days;
+    d++
+  ) {
 
     const iso =
       `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -430,12 +533,19 @@ function(id, value) {
     }
 
     if (!data.attendance[iso][id]) {
+
       data.attendance[iso][id] = {
+
         status: "Present",
+
         otHours: 0,
+
         advance: 0,
+
         payment: value
+
       };
+
     }
 
     data.attendance[iso][id].payment =
@@ -446,71 +556,105 @@ function(id, value) {
   saveData();
 
   render();
+
 };
 
-window.openEdit = function(id) {
+/* =========================
+   EDIT WORKER
+========================= */
+
+window.openEdit =
+function(id) {
 
   const w =
-    data.workers.find(x => x.id === id);
+    data.workers.find(
+      x => x.id === id
+    );
 
   if (!w) return;
 
   document.getElementById(
     "modalTitle"
-  ).textContent = "Edit Worker";
+  ).textContent =
+    "Edit Worker";
 
-  editWorkerId.value = w.id;
+  editWorkerId.value =
+    w.id;
 
-  workerName.value = w.name;
+  workerName.value =
+    w.name;
 
-  workerRate.value = w.rate || "";
+  workerRate.value =
+    w.rate || "";
 
-  workerOTRate.value = w.otRate || "";
+  workerOTRate.value =
+    w.otRate || "";
 
-  workerPhone.value = w.phone || "";
+  workerPhone.value =
+    w.phone || "";
 
-  modal.classList.remove("hidden");
+  modal.classList.remove(
+    "hidden"
+  );
 
   workerName.focus();
 
 };
 
-window.deleteWorker = function(id) {
+/* =========================
+   DELETE WORKER
+========================= */
+
+window.deleteWorker =
+function(id) {
 
   const w =
-    data.workers.find(x => x.id === id);
+    data.workers.find(
+      x => x.id === id
+    );
 
   if (!w) return;
 
   if (!confirm(
     `Delete worker "${w.name}"?`
-  )) return;
+  )) {
+    return;
+  }
 
   data.workers =
     data.workers.filter(
       x => x.id !== id
     );
 
-  Object.keys(data.attendance)
-    .forEach(date => {
+  Object.keys(
+    data.attendance
+  ).forEach(date => {
 
-      delete data.attendance[date][id];
+    delete data.attendance[date][id];
 
-    });
+  });
 
   saveData();
+
+  searchInput.value = "";
 
   render();
 
 };
 
+/* =========================
+   ADD WORKER
+========================= */
+
 document.getElementById(
   "addWorkerBtn"
-).onclick = function() {
+).onclick =
+function() {
 
   document.getElementById(
     "modalTitle"
-  ).textContent = "Add Worker";
+  ).textContent =
+    "Add Worker";
 
   editWorkerId.value = "";
 
@@ -522,25 +666,35 @@ document.getElementById(
 
   workerPhone.value = "";
 
-  modal.classList.remove("hidden");
+  modal.classList.remove(
+    "hidden"
+  );
 
   workerName.focus();
 
 };
 
+/* =========================
+   CLOSE MODAL
+========================= */
+
 function closeModal() {
 
-  modal.classList.add("hidden");
+  modal.classList.add(
+    "hidden"
+  );
 
 }
 
 document.getElementById(
   "closeModal"
-).onclick = closeModal;
+).onclick =
+closeModal;
 
 document.getElementById(
   "cancelBtn"
-).onclick = closeModal;
+).onclick =
+closeModal;
 
 modal.addEventListener(
   "click",
@@ -553,9 +707,14 @@ modal.addEventListener(
   }
 );
 
+/* =========================
+   SAVE WORKER
+========================= */
+
 document.getElementById(
   "saveWorkerBtn"
-).onclick = function() {
+).onclick =
+function() {
 
   const name =
     workerName.value.trim();
@@ -584,13 +743,18 @@ document.getElementById(
 
     if (w) {
 
-      w.name = name;
+      w.name =
+        name;
 
       w.rate =
-        Number(workerRate.value || 0);
+        Number(
+          workerRate.value || 0
+        );
 
       w.otRate =
-        Number(workerOTRate.value || 0);
+        Number(
+          workerOTRate.value || 0
+        );
 
       w.phone =
         workerPhone.value.trim();
@@ -603,15 +767,21 @@ document.getElementById(
 
     data.workers.push({
 
-      id: crypto.randomUUID(),
+      id:
+        crypto.randomUUID(),
 
-      name: name,
+      name:
+        name,
 
       rate:
-        Number(workerRate.value || 0),
+        Number(
+          workerRate.value || 0
+        ),
 
       otRate:
-        Number(workerOTRate.value || 0),
+        Number(
+          workerOTRate.value || 0
+        ),
 
       phone:
         workerPhone.value.trim()
@@ -624,15 +794,24 @@ document.getElementById(
 
   closeModal();
 
+  searchInput.value = "";
+
   render();
 
 };
 
+/* =========================
+   MARK ALL PRESENT
+========================= */
+
 document.getElementById(
   "allPresentBtn"
-).onclick = function() {
+).onclick =
+function() {
 
-  if (!data.workers.length) return;
+  if (!data.workers.length) {
+    return;
+  }
 
   const date =
     selectedDate();
@@ -644,13 +823,17 @@ document.getElementById(
   data.workers.forEach(w => {
 
     const old =
-      getAttendance(w.id, date);
+      getAttendance(
+        w.id,
+        date
+      );
 
     data.attendance[date][w.id] = {
 
       ...old,
 
-      status: "Present"
+      status:
+        "Present"
 
     };
 
@@ -662,23 +845,52 @@ document.getElementById(
 
 };
 
-dateInput.onchange = render;
+/* =========================
+   DATE CHANGE
+========================= */
 
-searchInput.oninput = render;
+dateInput.onchange =
+function() {
+
+  render();
+
+};
+
+/* =========================
+   SEARCH CHANGE
+========================= */
+
+searchInput.oninput =
+function() {
+
+  render();
+
+};
+
+/* =========================
+   PRINT
+========================= */
 
 document.getElementById(
   "printBtn"
-).onclick = function() {
+).onclick =
+function() {
 
   window.print();
 
 };
 
+/* =========================
+   EXPORT CSV
+========================= */
+
 document.getElementById(
   "exportBtn"
-).onclick = function() {
+).onclick =
+function() {
 
   const rows = [[
+
     "Date",
     "Worker Name",
     "Daily Rate",
@@ -687,17 +899,23 @@ document.getElementById(
     "Advance",
     "OT Rate",
     "OT Amount"
+
   ]];
 
   const dates =
-    Object.keys(data.attendance).sort();
+    Object.keys(
+      data.attendance
+    ).sort();
 
   dates.forEach(date => {
 
     data.workers.forEach(w => {
 
       const a =
-        getAttendance(w.id, date);
+        getAttendance(
+          w.id,
+          date
+        );
 
       rows.push([
 
@@ -726,10 +944,14 @@ document.getElementById(
 
   const csv =
     rows.map(row =>
+
       row.map(value =>
+
         `"${String(value)
           .replaceAll('"', '""')}"`
+
       ).join(",")
+
     ).join("\n");
 
   const blob =
@@ -742,10 +964,14 @@ document.getElementById(
     );
 
   const a =
-    document.createElement("a");
+    document.createElement(
+      "a"
+    );
 
   a.href =
-    URL.createObjectURL(blob);
+    URL.createObjectURL(
+      blob
+    );
 
   a.download =
     "CTD-Worker-Hajeri.csv";
@@ -753,5 +979,9 @@ document.getElementById(
   a.click();
 
 };
+
+/* =========================
+   START APP
+========================= */
 
 render();
