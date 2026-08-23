@@ -33,7 +33,7 @@
 
 <main class="container">
 
-  <!-- SEARCH / DATE -->
+  <!-- TOOLBAR -->
 
   <section class="card toolbar">
 
@@ -54,13 +54,14 @@
       <label>Search / Select Worker</label>
 
       <input
-        type="text"
         id="searchInput"
+        list="workerList"
+        type="text"
         placeholder="Select or search worker name"
         autocomplete="off"
       >
 
-      <div id="workerSuggestions" class="worker-suggestions"></div>
+      <datalist id="workerList"></datalist>
 
     </div>
 
@@ -68,7 +69,6 @@
     <button
       id="showAllBtn"
       class="secondary"
-      type="button"
     >
       Show All
     </button>
@@ -77,7 +77,6 @@
     <button
       id="addWorkerBtn"
       class="primary"
-      type="button"
     >
       + Add Worker
     </button>
@@ -85,19 +84,26 @@
   </section>
 
 
-  <!-- SAVED ATTENDANCE DATES -->
+  <!-- SUBMITTED DATES -->
 
-  <section class="saved-dates-card">
+  <section class="card dates-card">
 
-    <div class="saved-dates-title">
-      <strong>Hajeri Saved Dates</strong>
+    <div class="section-title">
 
-      <span>
-        Green = Submitted
-      </span>
+      <div>
+        <h2>Attendance Dates</h2>
+
+        <p>
+          Green dates = Attendance Submitted
+        </p>
+      </div>
+
     </div>
 
-    <div id="savedDates" class="saved-dates"></div>
+    <div
+      id="submittedDates"
+      class="submitted-dates"
+    ></div>
 
   </section>
 
@@ -108,7 +114,7 @@
 
     <div class="stat">
       <strong id="totalCount">0</strong>
-      <span>Total</span>
+      <span>Total Workers</span>
     </div>
 
     <div class="stat">
@@ -137,13 +143,14 @@
 
       <div>
         <h2>Daily Hajeri</h2>
+
         <p id="selectedDateLabel"></p>
       </div>
+
 
       <button
         id="allPresentBtn"
         class="secondary"
-        type="button"
       >
         Mark All Present
       </button>
@@ -158,17 +165,27 @@
         <thead>
 
           <tr>
+
             <th>#</th>
+
             <th>Worker Name</th>
+
             <th>Daily Rate</th>
+
             <th>Status</th>
+
             <th>OT Hours</th>
+
             <th>Advance ₹</th>
+
             <th>Attendance</th>
+
             <th>Actions</th>
+
           </tr>
 
         </thead>
+
 
         <tbody id="workerTable"></tbody>
 
@@ -194,11 +211,13 @@
     <div class="section-title">
 
       <div>
+
         <h2>Monthly Salary Summary</h2>
 
         <p>
           Only submitted attendance is counted
         </p>
+
       </div>
 
     </div>
@@ -211,19 +230,31 @@
         <thead>
 
           <tr>
+
             <th>Worker</th>
+
             <th>Present</th>
+
             <th>Half Day</th>
+
             <th>Absent</th>
+
             <th>OT Hours</th>
+
             <th>Payable Days</th>
+
             <th>Gross Salary</th>
+
             <th>Advance</th>
+
             <th>Net Salary</th>
+
             <th>Payment</th>
+
           </tr>
 
         </thead>
+
 
         <tbody id="monthlyTable"></tbody>
 
@@ -254,7 +285,6 @@
       <button
         id="closeModal"
         class="close"
-        type="button"
       >
         ×
       </button>
@@ -262,7 +292,9 @@
     </div>
 
 
-    <label>Worker Name *</label>
+    <label>
+      Worker Name *
+    </label>
 
     <input
       id="workerName"
@@ -271,7 +303,9 @@
     >
 
 
-    <label>Daily Rate ₹</label>
+    <label>
+      Daily Rate (₹)
+    </label>
 
     <input
       id="workerRate"
@@ -282,7 +316,9 @@
     >
 
 
-    <label>OT Rate ₹ / Hour</label>
+    <label>
+      OT Rate (₹ / hour)
+    </label>
 
     <input
       id="workerOTRate"
@@ -293,7 +329,9 @@
     >
 
 
-    <label>Mobile Number</label>
+    <label>
+      Mobile Number
+    </label>
 
     <input
       id="workerPhone"
@@ -313,7 +351,6 @@
       <button
         id="cancelBtn"
         class="secondary"
-        type="button"
       >
         Cancel
       </button>
@@ -321,7 +358,6 @@
       <button
         id="saveWorkerBtn"
         class="primary"
-        type="button"
       >
         Save Worker
       </button>
