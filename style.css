@@ -21,3 +21,7 @@ button{border:0;border-radius:9px;height:44px;padding:0 17px;font-size:14px;font
 .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal-head h2{margin:0}.close{background:transparent;font-size:28px;padding:0;width:35px}
 .modal-box>input{margin-bottom:13px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
 @media(max-width:700px){.toolbar{flex-direction:column;align-items:stretch}.stats{grid-template-columns:repeat(2,1fr)}.topbar{padding:18px}.topbar h1{font-size:23px}.container{margin-top:15px}}
+
+.top-actions{display:flex;gap:10px;align-items:center}
+@media(max-width:700px){.top-actions{width:100%}.top-actions button{flex:1}}
+@media print{body{background:#fff}.topbar{display:block}.top-actions,.toolbar button,.actions,.status-select,#allPresentBtn{display:none!important}.card{box-shadow:none;border:1px solid #ddd}.modal{display:none!important}.container{max-width:none}.section-title{margin-bottom:8px}}

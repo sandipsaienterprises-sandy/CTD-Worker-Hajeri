@@ -155,6 +155,10 @@ document.getElementById("allPresentBtn").onclick=()=>{
 dateInput.onchange=render;
 searchInput.oninput=render;
 
+document.getElementById("printBtn").onclick=()=>{
+  window.print();
+};
+
 document.getElementById("exportBtn").onclick=()=>{
   const rows=[["Date","Worker Name","Daily Rate","Status"]];
   const dates=Object.keys(data.attendance).sort();
