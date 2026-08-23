@@ -4,29 +4,24 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   background: #f4f6f8;
   color: #222;
 }
 
-
-/* TOP BAR */
-
 .topbar {
-  background: #18212b;
+  background: #172033;
   color: white;
   padding: 18px 30px;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   gap: 20px;
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 25px;
+  font-size: 26px;
 }
 
 .topbar p {
@@ -39,97 +34,72 @@ body {
   gap: 10px;
 }
 
-
-/* CONTAINER */
-
 .container {
-  width: 95%;
   max-width: 1400px;
-  margin: 25px auto;
+  margin: auto;
+  padding: 25px;
 }
-
-
-/* CARD */
 
 .card {
   background: white;
   border-radius: 14px;
   padding: 20px;
   margin-bottom: 20px;
-
-  box-shadow:
-    0 3px 15px rgba(0,0,0,0.07);
+  box-shadow: 0 3px 15px rgba(0,0,0,0.06);
 }
-
-
-/* TOOLBAR */
 
 .toolbar {
   display: flex;
   align-items: end;
-  gap: 15px;
-  flex-wrap: wrap;
+  gap: 18px;
 }
 
 .toolbar > div {
-  min-width: 180px;
+  min-width: 170px;
 }
 
-.toolbar .grow {
+.grow {
   flex: 1;
 }
 
 label {
   display: block;
-  font-weight: bold;
-  margin-bottom: 7px;
   font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 7px;
 }
 
 input,
 select {
   width: 100%;
-  padding: 11px;
-
-  border: 1px solid #ccc;
+  padding: 11px 12px;
+  border: 1px solid #ccd2da;
   border-radius: 8px;
-
-  font-size: 15px;
   background: white;
+  font-size: 14px;
 }
 
 input:focus,
 select:focus {
-  outline: 2px solid #9cc9ff;
+  outline: none;
+  border-color: #2563eb;
 }
 
-
-/* DATE STATUS */
-
-.date-status {
-  margin-top: 7px;
-  font-size: 13px;
-  font-weight: bold;
+.search-row {
+  display: flex;
+  gap: 8px;
 }
 
-.date-status.done {
-  color: #16843b;
+.search-row input {
+  flex: 1;
 }
-
-.date-status.not-done {
-  color: #888;
-}
-
-
-/* BUTTONS */
 
 button {
   border: none;
   border-radius: 8px;
   padding: 10px 15px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 button:hover {
@@ -137,96 +107,62 @@ button:hover {
 }
 
 .primary {
-  background: #1769e0;
+  background: #2563eb;
   color: white;
 }
 
 .secondary {
-  background: #e9edf2;
+  background: #e8edf3;
   color: #222;
 }
 
-.edit {
-  background: #f0a800;
-  color: white;
+.add-btn {
+  white-space: nowrap;
 }
-
-.danger {
-  background: #dc3545;
-  color: white;
-}
-
-.submit-btn {
-  background: #159447;
-  color: white;
-}
-
-.submitted-btn {
-  background: #16843b;
-  color: white;
-  cursor: default;
-}
-
-
-/* STATS */
 
 .stats {
   display: grid;
-
-  grid-template-columns:
-    repeat(4, 1fr);
-
+  grid-template-columns: repeat(4, 1fr);
   gap: 15px;
-
   margin-bottom: 20px;
 }
 
 .stat {
   background: white;
-
-  padding: 22px;
-
   border-radius: 14px;
-
+  padding: 20px;
   text-align: center;
-
-  box-shadow:
-    0 3px 15px rgba(0,0,0,0.06);
+  box-shadow: 0 3px 15px rgba(0,0,0,0.05);
 }
 
 .stat strong {
   display: block;
-  font-size: 30px;
+  font-size: 28px;
+  margin-bottom: 5px;
 }
 
 .stat span {
-  display: block;
-  margin-top: 5px;
   color: #666;
 }
-
-
-/* SECTION TITLE */
 
 .section-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  gap: 15px;
   margin-bottom: 15px;
 }
 
 .section-title h2 {
   margin: 0;
+  font-size: 20px;
 }
 
 .section-title p {
   margin: 5px 0 0;
   color: #777;
+  font-size: 13px;
 }
-
-
-/* TABLE */
 
 .table-wrap {
   width: 100%;
@@ -236,131 +172,154 @@ button:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
-}
-
-th,
-td {
-  padding: 12px 10px;
-  border-bottom: 1px solid #eee;
-
-  text-align: left;
-  white-space: nowrap;
+  min-width: 950px;
 }
 
 th {
-  background: #f5f7f9;
+  background: #f1f4f7;
+  text-align: left;
+  padding: 12px;
   font-size: 13px;
+  white-space: nowrap;
 }
 
 td {
-  font-size: 14px;
+  padding: 12px;
+  border-bottom: 1px solid #edf0f2;
+  white-space: nowrap;
 }
 
-
-/* INPUTS IN TABLE */
+tr:hover td {
+  background: #fafafa;
+}
 
 .small-input {
   width: 90px;
-  padding: 8px;
 }
-
-
-/* ACTIONS */
 
 .actions {
   display: flex;
   gap: 7px;
 }
 
+.edit {
+  background: #f0a51a;
+  color: white;
+}
 
-/* EMPTY */
+.danger {
+  background: #dc3545;
+  color: white;
+}
+
+.submit-btn {
+  background: #e5a619;
+  color: white;
+}
+
+.submitted-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.edit-attendance {
+  background: #e5a619;
+  color: white;
+}
 
 .empty {
   text-align: center;
   padding: 25px;
   color: #777;
+  display: none;
 }
 
+.date-status {
+  margin-top: 6px;
+  min-height: 18px;
+  font-size: 12px;
+  font-weight: 700;
+}
 
-/* SUBMITTED DATES */
+.date-status.submitted {
+  color: #15803d;
+}
 
-.dates-card {
-  padding-bottom: 15px;
+.date-status.not-submitted {
+  color: #777;
+}
+
+.date-box.submitted-date input {
+  border: 2px solid #16a34a;
+  background: #f0fdf4;
+}
+
+.submitted-card {
+  padding: 15px 20px;
 }
 
 .submitted-dates {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .date-chip {
-  background: #d9f5df;
-  color: #137333;
-
-  border: 1px solid #8ed19d;
-
-  padding: 8px 12px;
-
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
   border-radius: 20px;
-
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-
-  font-weight: bold;
 }
 
 .date-chip:hover {
-  background: #bcebc5;
+  background: #bbf7d0;
+}
+
+.date-chip.active {
+  background: #16a34a;
+  color: white;
 }
 
 .no-dates {
   color: #888;
-  font-size: 14px;
+  font-size: 13px;
 }
-
-
-/* MODAL */
 
 .modal {
   position: fixed;
   inset: 0;
-
-  background: rgba(0,0,0,0.45);
-
+  background: rgba(0,0,0,0.55);
   display: flex;
-  align-items: center;
   justify-content: center;
-
+  align-items: center;
   padding: 20px;
-
   z-index: 1000;
 }
 
-.hidden {
-  display: none !important;
+.modal.hidden {
+  display: none;
 }
 
 .modal-box {
   width: 100%;
-  max-width: 500px;
-
+  max-width: 480px;
   background: white;
-
-  padding: 25px;
-
   border-radius: 14px;
+  padding: 25px;
+}
 
-  box-shadow:
-    0 10px 40px rgba(0,0,0,0.2);
+.modal-box label {
+  margin-top: 14px;
 }
 
 .modal-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  margin-bottom: 20px;
 }
 
 .modal-head h2 {
@@ -370,53 +329,69 @@ td {
 .close {
   background: transparent;
   font-size: 28px;
-  padding: 0 8px;
-}
-
-.modal-box label {
-  margin-top: 12px;
+  padding: 2px 8px;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
-
-/* SUBMITTED ROW */
-
-tr.submitted-row {
-  background: #f0fff3;
+.status-select {
+  min-width: 120px;
 }
 
+.payment-select {
+  min-width: 100px;
+}
 
-/* RESPONSIVE */
-
-@media (max-width: 800px) {
+@media (max-width: 850px) {
 
   .topbar {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .stats {
-    grid-template-columns:
-      repeat(2, 1fr);
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .toolbar {
-    align-items: stretch;
+  .toolbar > div {
+    width: 100%;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
   }
 
 }
 
-@media (max-width: 500px) {
+@media print {
 
-  .stats {
-    grid-template-columns: 1fr;
+  .topbar {
+    background: white;
+    color: black;
+  }
+
+  .top-actions,
+  .toolbar,
+  .submitted-card,
+  #allPresentBtn,
+  .actions,
+  .modal {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+
+  .card,
+  .stat {
+    box-shadow: none;
   }
 
 }
